@@ -495,7 +495,7 @@ def preprocessing(config, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\preprocessing\PreprocessingParameters_task-Duration_release.json"
+    config_file = r"PreprocessingParameters_task-Duration_release.json"
     subjects_list = ["SF102"]
     preprocessing(config_file, subjects_list)
 

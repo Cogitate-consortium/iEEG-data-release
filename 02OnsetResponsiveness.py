@@ -194,6 +194,6 @@ def onset_responsiveness(config, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\preprocessing\OnsetResponsiveness_task-Duration_release.json"
+    config_file = r"OnsetResponsiveness_task-Duration_release.json"
     subjects_list = ["SF102"]
     onset_responsiveness(config_file, subjects_list)
