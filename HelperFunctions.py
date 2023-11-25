@@ -1366,8 +1366,8 @@ def create_mni_montage(channels, bids_path, fs_dir):
     :param channels: (list) name of the channels for whom to fetch the MNI coordinates. Must contain
     the subject identifier as well as the channel identifier, like SF102-G1.
     :param bids_path: (mne-bids bidsPATH object) contains all the information to fetch the coordinates.
-    :return: (pd dataframe) table with channel column (containing channel names) and x, y, z channels positions
-    in MNI space
+    :param fs_dir: (string or pathlib path object) path to the free surfer root folder containing the fsaverage
+    :return: info (mne info object) mne info object with the channels info, including position in MNI space
     """
     from mne_bids import BIDSPath
     # Prepare table to store the coordinates:
@@ -1387,17 +1387,20 @@ def create_mni_montage(channels, bids_path, fs_dir):
         # Create the name of the mni file coordinates:
         coordinates_file = 'sub-{}_ses-{}_space-fsaverage_electrodes.tsv'.format(subject,
                                                                                  subject_path.session)
+        channel_file = 'sub-{}_ses-{}_space-fsaverage_channels.tsv'.format(subject,
+                                                                                 subject_path.session)
         # Load the coordinates:
         coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
-
+        channels_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
         # Extract the channels of interest:
         subject_coordinates = coordinates_df.loc[coordinates_df['name'].isin(
             subject_channels), ['name', 'x', 'y', 'z']]
-
+        # Add the channel type:
+        subject_coordinates['ch_types'] = [channels_df.loc[channels_df['name'] == channel, 'type']
+                                           for channel in subject_coordinates['name']]
         # Make sure to append the name of the subject to the channels coordinates for when we recombine:
         subject_coordinates['name'] = ['-'.join([subject, channel])
                                        for channel in subject_coordinates['name']]
-
         # Append to the rest
         channels_coordinates.append(subject_coordinates)
 
@@ -1409,8 +1412,11 @@ def create_mni_montage(channels, bids_path, fs_dir):
     # Create the montage:
     montage = mne.channels.make_dig_montage(ch_pos=dict(zip(channels, position)),
                                             coord_frame='mni_tal')
-
     # Making sure to add the mni fiducials:
     montage.add_mni_fiducials(fs_dir)
+    # In mne-python, plotting electrodes on the brain requires some additional info about the channels:
+    info = mne.create_info(ch_names=channels, ch_types=channels_coordinates['ch_types'].to_list(), sfreq=100)
+    # Add the montage:
+    info.set_montage(montage)
 
-    return montage
+    return info
