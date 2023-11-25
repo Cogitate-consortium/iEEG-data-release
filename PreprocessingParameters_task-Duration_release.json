@@ -12,6 +12,7 @@
     "plot_single_channels": false,
     "montage_space": "T1",
     "preprocessing_steps": [
+        "atlas_mapping",
         "plot_channels_loc",
         "description_bad_channels_rejection",
         "notch_filtering",
@@ -36,8 +37,7 @@
             "recon_source": "{0}/{0}_ECOG_V1/RESOURCES/ElecRecon/fs_recon/{0}",
             "list_parcellations": [
                 "aparc+aseg",
-                "aparc.a2009s+aseg",
-                "wang15_mplbl"
+                "aparc.a2009s+aseg"
             ],
             "remove_channels_unknown": true
         }

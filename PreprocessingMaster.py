@@ -92,8 +92,9 @@ def preprocessing(config, subjects, bids_root):
         # Load the data in memory:
         raw["broadband"].load_data()
         # Downsampling the signal, otherwise things take forever:
-        print("Downsampling the signal to {}Hz, this may take a little while".format(param['downsample_rate']))
-        raw["broadband"].resample(param['downsample_rate'], n_jobs=param["njobs"], verbose=True)
+        if param['downsample_rate'] is not None:
+            print("Downsampling the signal to {}Hz, this may take a little while".format(param['downsample_rate']))
+            raw["broadband"].resample(param['downsample_rate'], n_jobs=param["njobs"], verbose=True)
         print(raw["broadband"].info)
 
         # Detrending the data:
@@ -388,8 +389,9 @@ def preprocessing(config, subjects, bids_root):
                     # compatibility
                     if "raw" in locals():
                         # Extract the anatomical labels:
-                        electrodes_mapping_df = roi_mapping(raw["broadband"], step_parameters["list_parcellations"],
-                                                            "sub-" + subject, param["fs_dir"], config, save_root, step,
+                        electrodes_mapping_df = roi_mapping(raw["broadband"],
+                                                            step_parameters[signal]["list_parcellations"],
+                                                            "sub-" + subject, param["fs_dir"], param, save_root, step,
                                                             signal, file_prefix, file_extension='mapping.csv')
 
                         # Get a list of the channels that are outside the brain:
@@ -403,7 +405,7 @@ def preprocessing(config, subjects, bids_root):
                             if len(ch_roi.split("/")) == 1:
                                 if ch_roi.split("/")[0].lower() == "unknown":
                                     bad_channels.append(channel)
-                        if step_parameters["remove_channels_unknown"]:
+                        if step_parameters[signal]["remove_channels_unknown"]:
                             print("WARNING: The following channels were found to sit outside the brain and will be set "
                                   "to bad!")
                             print(bad_channels)

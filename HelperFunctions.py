@@ -1388,7 +1388,7 @@ def create_mni_montage(channels, bids_path, fs_dir):
         coordinates_file = 'sub-{}_ses-{}_space-fsaverage_electrodes.tsv'.format(subject,
                                                                                  subject_path.session)
         channel_file = 'sub-{}_ses-{}_space-fsaverage_channels.tsv'.format(subject,
-                                                                                 subject_path.session)
+                                                                           subject_path.session)
         # Load the coordinates:
         coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
         channels_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
@@ -1420,3 +1420,60 @@ def create_mni_montage(channels, bids_path, fs_dir):
     info.set_montage(montage)
 
     return info
+
+
+def get_roi_channels(channels, rois, bids_path, atlas):
+    """
+    This function takes in a list of channels and returns only those which are in a particular set of ROIs.
+    :param channels: (list of string) list of channels
+    :param rois: (list of strings) list of ROIs with names matching the labels of a particular atlas
+    :param bids_path: (mne bids path object)
+    :param atlas: (string) name of the atlas of interest
+    :return: channels (list of string) list of channels found within the region of interest
+    """
+
+    # Load the atlas of that particular subject:
+    atlas_file = Path(bids_path.root, 'derivatives', 'preprocessing',
+                      'sub-' + bids_path.subject, 'ses-' + bids_path.session, bids_path.datatype,
+                      'atlas_mapping', 'broadband',
+                      'sub-{}_ses-{}_task-{}_desc-atlas_mapping_{}-{}mapping.csv'.format(bids_path.subject,
+                                                                                         bids_path.session,
+                                                                                         bids_path.task,
+                                                                                         bids_path.datatype, atlas))
+    atlas_df = pd.read_csv(atlas_file, sep=',')
+    # Loop through each channel:
+    roi_channels = []
+    for channel in channels:
+        # Extract channels rois:
+        try:
+            channel_labels = atlas_df.loc[atlas_df['channel'] == channel, 'region'].values[0].split('/')
+        except AttributeError:
+            print('WARNING: No loc for {}'.format(channel))
+            continue
+        except IndexError:
+            print('WARNING: {} not found in channels localization file'.format(channel))
+        # Remove ctx l and r
+        channel_labels = [lbl.replace('ctx_lh_', '').replace('ctx_rh_', '') for lbl in channel_labels]
+        # Check whether any of the channel label is within the list of rois:
+        for ch_lbl in channel_labels:
+            if ch_lbl in rois:
+                roi_channels.append(channel)
+                break
+
+    return roi_channels
+
+from mne_bids import BIDSPath
+bids_root = "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids"
+bids_path = BIDSPath(root=bids_root, subject='SF102',
+                     session='V1',
+                     datatype='ieeg',
+                     task='Dur')
+subject = 'SF102'
+channel = 'LO1'
+example_epochs_path = Path(bids_root, 'derivatives', 'preprocessing',
+                           'sub-' + subject, 'ses-' + "V1", 'ieeg',
+                           "epoching", 'high_gamma',
+                           "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
+                                                                                   "V1", "Dur",
+                                                                                   "ieeg"))
+
