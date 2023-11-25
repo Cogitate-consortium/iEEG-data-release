@@ -59,7 +59,7 @@ def create_dig_montage(mne_data, bids_path, montage_space='T1'):
     # Create channels localization file:
     channels_loc = Path(bids_path.directory,
                         'sub-{}_ses-{}_space-{}_electrodes.tsv'.format(bids_path.subject, bids_path.session,
-                                                            space))
+                                                                       space))
     # Load the file:
     channels_coordinates = pd.read_csv(channels_loc, sep='\t')
     # From this file, getting the channels:
@@ -183,7 +183,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
             ax.grid(linestyle=":")
             ax.set_title("{} PSD".format(raw.ch_names[pick]))
             full_file_name = Path(save_path, '{}_desc-{}_ieeg-{}{}'.format(file_prefix, step,
-                                                                            raw.ch_names[pick], file_extension))
+                                                                           raw.ch_names[pick], file_extension))
             plt.savefig(full_file_name, dpi=300, transparent=True)
             plt.close()
 
@@ -264,7 +264,7 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
                 # Plotting the psd
                 raw.plot_psd(picks=pick, show=False, ax=axs[1])
                 full_file_name = Path(save_path, '{}_desc-{}_ieeg-{}{}'.format(file_prefix, step,
-                                                                                raw.ch_names[pick], file_extension))
+                                                                               raw.ch_names[pick], file_extension))
                 plt.savefig(full_file_name, transparent=True)
                 plt.close()
 
@@ -642,7 +642,7 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
         # Filtering the signal and apply the hilbert:
         print('Computing the envelope amplitude')
         bin_power = freq_band_raw.copy().filter(freq_bin[0], freq_bin[1],
-                                                 n_jobs=njobs).apply_hilbert(envelope=True)
+                                                n_jobs=njobs).apply_hilbert(envelope=True)
 
         # Now, dividing the amplitude by the mean, channel wise:
         if do_baseline_normalization:
@@ -1319,6 +1319,7 @@ def remove_channel_tsv_description(channel_tsv_df, description):
 
     return channel_tsv_df
 
+
 from mne.baseline import rescale
 
 
@@ -1353,3 +1354,63 @@ def baseline_scaling(epochs, correction_method="ratio", baseline=(None, 0), pick
                           picks=picks, n_jobs=n_jobs, )
 
     return None
+
+
+def create_mni_montage(channels, bids_path, fs_dir):
+    """
+    This function fetches the mni coordinates of a set of channels. Importantly, the channels must
+    consist of a string with the subject identifier and the channel identifier separated by a minus,
+    like: SF102-G1. This ensures that the channels positions can be fecthed from the right subject
+    folder. This is specific to iEEG for which we have different channels in each patient which
+    may have the same name.
+    :param channels: (list) name of the channels for whom to fetch the MNI coordinates. Must contain
+    the subject identifier as well as the channel identifier, like SF102-G1.
+    :param bids_path: (mne-bids bidsPATH object) contains all the information to fetch the coordinates.
+    :return: (pd dataframe) table with channel column (containing channel names) and x, y, z channels positions
+    in MNI space
+    """
+    from mne_bids import BIDSPath
+    # Prepare table to store the coordinates:
+    channels_coordinates = []
+    # First, extract the name of each subject present in the channels list:
+    subjects = list(set([channel.split('-')[0] for channel in channels]))
+
+    for subject in subjects:
+        # Extract this participant's channels:
+        subject_channels = [channel.split('-')[1] for channel in channels
+                            if channel.split('-')[0] == subject]
+        # Create the path to this particular subject:
+        subject_path = BIDSPath(root=bids_path.root, subject=subject,
+                                session=bids_path.session,
+                                datatype=bids_path.datatype,
+                                task=bids_path.task)
+        # Create the name of the mni file coordinates:
+        coordinates_file = 'sub-{}_ses-{}_space-fsaverage_electrodes.tsv'.format(subject,
+                                                                                 subject_path.session)
+        # Load the coordinates:
+        coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
+
+        # Extract the channels of interest:
+        subject_coordinates = coordinates_df.loc[coordinates_df['name'].isin(
+            subject_channels), ['name', 'x', 'y', 'z']]
+
+        # Make sure to append the name of the subject to the channels coordinates for when we recombine:
+        subject_coordinates['name'] = ['-'.join([subject, channel])
+                                       for channel in subject_coordinates['name']]
+
+        # Append to the rest
+        channels_coordinates.append(subject_coordinates)
+
+    # Concatenating everything into 1 table:
+    channels_coordinates = pd.concat(channels_coordinates).reset_index(drop=True)
+
+    # Create one single montage out of it:
+    position = channels_coordinates[["x", "y", "z"]].to_numpy()
+    # Create the montage:
+    montage = mne.channels.make_dig_montage(ch_pos=dict(zip(channels, position)),
+                                            coord_frame='mni_tal')
+
+    # Making sure to add the mni fiducials:
+    montage.add_mni_fiducials(fs_dir)
+
+    return montage
