@@ -41,7 +41,7 @@ ERROR_SIGNAL_MISSING = "For the preprocessing step {step}, you have passed the s
                        "\ngenerated. Make sure to check your config file"
 
 
-def preprocessing(config, subjects):
+def preprocessing(config, subjects, bids_root):
     print("-" * 40)
     print("Welcome to preprocessing!")
     print("The following subjects will now be preprocessed: ")
@@ -64,7 +64,7 @@ def preprocessing(config, subjects):
             param = json.load(f)
 
         # Create path to save the data:
-        save_root = Path(param["bids_root"], 'derivatives', 'preprocessing',
+        save_root = Path(bids_root, 'derivatives', 'preprocessing',
                          'sub-' + subject, 'ses-' + param["session"], param["data_type"])
         if not os.path.isdir(save_root):
             # Creating the directory:
@@ -77,7 +77,7 @@ def preprocessing(config, subjects):
         # Preparing the data:
         # --------------------------------------------------------------------------------------------------------------
         # Creating the bids path object:
-        bids_path = BIDSPath(root=param["bids_root"], subject=subject,
+        bids_path = BIDSPath(root=bids_root, subject=subject,
                              session=param["session"],
                              datatype=param["data_type"],
                              task=param["task"])
@@ -497,5 +497,6 @@ def preprocessing(config, subjects):
 if __name__ == "__main__":
     config_file = r"PreprocessingParameters_task-Duration_release.json"
     subjects_list = ["SF102"]
-    preprocessing(config_file, subjects_list)
+    preprocessing(config_file, subjects_list,
+                  "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids")
 
