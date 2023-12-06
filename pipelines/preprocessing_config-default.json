@@ -12,8 +12,6 @@
     "plot_single_channels": false,
     "montage_space": "T1",
     "preprocessing_steps": [
-        "atlas_mapping",
-        "plot_channels_loc",
         "description_bad_channels_rejection",
         "notch_filtering",
         "laplace_reference",

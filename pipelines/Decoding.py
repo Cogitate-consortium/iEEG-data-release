@@ -59,7 +59,7 @@ def decoding(config, subjects, bids_root):
         # ======================================================================================================
         # Load and prepare the data:
         # Set path to the data:
-        epochs_file = Path(bids_root, 'derivatives', 'preprocessing',
+        epochs_file = Path(bids_root, 'derivatives', '../preprocessing',
                            'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                            "epoching", param["signal"],
                            "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
@@ -193,7 +193,7 @@ def decoding(config, subjects, bids_root):
 
 
 if __name__ == "__main__":
-    config_file = r"Decoding_task-Duration_release.json"
+    config_file = r"decoding_config-default.json"
     subjects_list = ["SF102"]
     decoding(config_file, subjects_list,
              "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids")

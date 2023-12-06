@@ -1462,6 +1462,7 @@ def get_roi_channels(channels, rois, bids_path, atlas):
 
     return roi_channels
 
+
 from mne_bids import BIDSPath
 bids_root = "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids"
 bids_path = BIDSPath(root=bids_root, subject='SF102',

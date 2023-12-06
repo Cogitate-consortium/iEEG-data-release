@@ -64,7 +64,7 @@ def preprocessing(config, subjects, bids_root):
             param = json.load(f)
 
         # Create path to save the data:
-        save_root = Path(bids_root, 'derivatives', 'preprocessing',
+        save_root = Path(bids_root, 'derivatives', '../preprocessing',
                          'sub-' + subject, 'ses-' + param["session"], param["data_type"])
         if not os.path.isdir(save_root):
             # Creating the directory:
@@ -497,7 +497,7 @@ def preprocessing(config, subjects, bids_root):
 
 
 if __name__ == "__main__":
-    config_file = r"PreprocessingParameters_task-Duration_release.json"
+    config_file = r"preprocessing_config-default.json"
     subjects_list = ["SF102"]
     preprocessing(config_file, subjects_list,
                   "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids")

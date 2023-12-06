@@ -68,7 +68,7 @@ def preprocessing():
                         help="Option to preprocessing the preprocessing script interactively, allowing for manual input")
     args = parser.parse_args()
     print("-" * 40)
-    print("Welcome to PreprocessingMaster.py!")
+    print("Welcome to Preprocessing.py!")
 
     # Load the preprocessing parameters
     preprocessing_parameters = PreprocessingParameters(
@@ -326,7 +326,7 @@ def preprocessing():
             if not args.interactive:
                 raise Exception("You have asked to perform manual_bad_channels_rejection in non-interactive mode."
                                 "\nThis is not possible! You should either set the interactive variable to true in "
-                                "\nwhen calling PreprocessingMaster.py OR remove this step from the preprocessing"
+                                "\nwhen calling Preprocessing.py OR remove this step from the preprocessing"
                                 "steps list")
             for ind, signal in enumerate(list(step_parameters.keys())):
                 if 'raw' in locals() and signal in raw:
