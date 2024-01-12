@@ -15,7 +15,7 @@
     "poststimulus_window": [0.050, 0.350],
     "metric": "auc",
     "alternative": "two-sided",
-    "alpha": 0.05,
+    "bf_thresh": 3,
     "column_order": ["task_relevance", "category", "duration", "orientation"],
     "units": "HGP (norm.)",
     "scaling": 1,

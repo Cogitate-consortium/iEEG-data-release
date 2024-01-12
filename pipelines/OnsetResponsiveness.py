@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 import mne
 import matplotlib.pyplot as plt
+from pingouin import ttest
 
 from HelperFunctions import baseline_scaling
 
@@ -108,22 +109,21 @@ def onset_responsiveness(config, subjects, bids_root,
                 raise Exception("The metric passed is not supported, must be either mean, auc or ptp, check spelling!")
 
             # Test for statistical difference:
-            ch_res = scipy.stats.ttest_rel(ch_prestim, ch_poststim, axis=0, nan_policy='propagate',
-                                           alternative=param["alternative"])
-            # In addition, computing the effect size:
-            f_size = np.mean(ch_poststim - ch_prestim) / np.std(ch_poststim - ch_prestim)
+            ttest(ch_prestim, ch_poststim, paired=True, r=0.707, alternative='two-sided').round(3)
+            ch_res = ttest(ch_prestim, ch_poststim, paired=True, r=0.707, alternative='two-sided').round(3)
 
             # Store the results in a dataframe:
             subject_results.append(pd.DataFrame({
                 "subject": subject,
                 "channel": "-".join([subject, ch]),
-                "statistic": ch_res.statistic,
-                "pvalue": ch_res.pvalue,
-                "reject": ch_res.pvalue < param["alpha"],
-                "df": ch_res.df,
-                "lowCI": ch_res[1],
-                "highCI": ch_res[0],
-                "f_size": f_size
+                "statistic": float(ch_res["T"].item()),
+                "pvalue": float(ch_res["p-val"].item()),
+                "bf": float(ch_res["BF10"].item()),
+                "reject": float(ch_res["BF10"].item()) > param["bf_thresh"],
+                "df": float(ch_res["dof"].item()),
+                "lowCI": float(ch_res["CI95%"].item()[0]),
+                "highCI": float(ch_res["CI95%"].item()[1]),
+                "f_size": np.mean(ch_poststim - ch_prestim) / np.std(ch_poststim - ch_prestim)
             }, index=[0]))
         # Concatenate the subject's results:
         subject_results = pd.concat(subject_results).reset_index(drop=True)
@@ -201,7 +201,7 @@ def onset_responsiveness(config, subjects, bids_root,
 
 if __name__ == "__main__":
     config_file = r"onset_responsiveness_config-default.json"
-    subjects_list = ["SF124", "SF125", "SF126"]
+    subjects_list = ["SF102"]  # ["SF124", "SF125", "SF126"]
     onset_responsiveness(config_file, subjects_list,
                          "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids",
-                         plot_single_channels=True, plot_only_responsive=False)
+                         plot_single_channels=False, plot_only_responsive=False)
