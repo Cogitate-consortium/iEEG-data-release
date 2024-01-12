@@ -155,7 +155,7 @@ def onset_responsiveness(config, subjects, bids_root,
                 mne.viz.plot_epochs_image(epochs, vmin=vmin, vmax=vmax, picks=ch.split("-")[1], order=trials_order,
                                           show=False, units=dict(ecog=param['units'], seeg=param['units']),
                                           scalings=dict(ecog=param['scaling'], seeg=param['scaling']),
-                                          evoked=True, cmap="RdYlBu_r")
+                                          evoked=True, cmap="RdYlBu_r", sigma=0.5)
                 fig_file = Path(sig_root, '{}{}{}'.format(file_prefix, ch, '-image.png'))
                 plt.savefig(fig_file)
                 plt.close()
@@ -175,7 +175,7 @@ def onset_responsiveness(config, subjects, bids_root,
                                               order=trials_order, show=False,
                                               units=dict(ecog=param['units'], seeg=param['units']),
                                               scalings=dict(ecog=param['scaling'], seeg=param['scaling']),
-                                              evoked=True, cmap="RdYlBu_r")
+                                              evoked=True, cmap="RdYlBu_r", sigma=0.5)
                     fig_file = Path(non_sig_root, '{}{}{}'.format(file_prefix, ch, '-image.png'))
                     plt.savefig(fig_file)
                     plt.close()
@@ -201,7 +201,7 @@ def onset_responsiveness(config, subjects, bids_root,
 
 if __name__ == "__main__":
     config_file = r"onset_responsiveness_config-default.json"
-    subjects_list = ["SF102"]
+    subjects_list = ["SF124", "SF125", "SF126"]
     onset_responsiveness(config_file, subjects_list,
                          "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids",
-                         plot_single_channels=True, plot_only_responsive=True)
+                         plot_single_channels=True, plot_only_responsive=False)
