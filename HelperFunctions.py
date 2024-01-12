@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import numpy as np
 import math
+import matplotlib
 
 import mne
 from mne.viz import plot_alignment, snapshot_brain_montage
@@ -16,10 +17,32 @@ from mne.datasets import fetch_fsaverage
 from nibabel.freesurfer.io import read_geometry
 
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
 
 import pandas as pd
 
 import json
+
+
+def get_cmap_rgb_values(values, cmap=None, center=None):
+    """
+    This function takes in a list of values and returns a set of RGB values mapping onto a specified color bar. If a
+    midpoint is set, the color bar will be normalized accordingly.
+    :param values: (list of floats) list of values for which to obtain a color map
+    :param cmap: (string) name of the colormap
+    :param center: (float) values on which to center the colormap
+    return: colors (list of rgb triplets) color for each passed value
+    """
+    if cmap is None:
+        cmap = "RdYlBu_r"
+    if center is None:
+        center = (max(values) - min(values)) / 2
+    # Create the normalization function:
+    norm = matplotlib.colors.TwoSlopeNorm(vmin=min(values), vcenter=center, vmax=max(values))
+    colormap = colormaps.get_cmap(cmap)
+    colors = [colormap(norm(value)) for value in values]
+
+    return colors
 
 
 def path_generator(directory):
@@ -103,7 +126,7 @@ def save_config(config, save_path, step, signal, file_prefix, file_extension):
 
 
 def mne_data_saver(data, config, save_root, step, signal, file_prefix,
-                   file_extension="-raw.fif"):
+                   file_extension="-raw.fif", verbose=True):
     """
     This function saves the different instances of mne objects
     :param data: (mne object: epochs, evoked, raw...) data to be saved
@@ -115,6 +138,7 @@ def mne_data_saver(data, config, save_root, step, signal, file_prefix,
     :param file_prefix: (string) prefix of the file to save. We follow the convention to have
     the subject ID, the session and the task.
     :param file_extension: (string) file name extension
+    :param verbose: (bool) verbose level for MNE functions
     :return:
     """
     print("=" * 40)
@@ -126,7 +150,7 @@ def mne_data_saver(data, config, save_root, step, signal, file_prefix,
     # Generating the full file name:
     full_file_name = Path(save_path, '{}_desc-{}_ieeg{}'.format(file_prefix, step, file_extension))
     # Saving the data:
-    data.save(full_file_name, overwrite=True)
+    data.save(full_file_name, overwrite=True, verbose=verbose)
     # Saving the config:
     save_config(config, save_path, step, signal, file_prefix, file_extension.split('.')[0])
 
@@ -134,7 +158,7 @@ def mne_data_saver(data, config, save_root, step, signal, file_prefix,
 
 
 def plot_channels_psd(raw, save_root, step, signal, file_prefix,
-                      file_extension="psd.png", plot_single_channels=False, channels_type=None):
+                      file_extension="psd.png", plot_single_channels=False, channels_type=None, verbose=True):
     """
     This function plots and saved the psd of the chosen electrodes. There is also the option to plot each channel
     separately
@@ -148,6 +172,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
     :param plot_single_channels: (boolean) whether to plot single channels or only all of
     them superimposed
     :param channels_type: (dict) list of the channels of interest
+    :param verbose: (bool) verbose level for MNE functions
     :return:
     """
     # Getting  the relevant channels:
@@ -163,7 +188,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
 
     # ==========================================================
     # Plotting the psd from all the channels:
-    raw.plot_psd(picks=picks, show=False)
+    raw.plot_psd(picks=picks, show=False, verbose=verbose)
     # Saving the figure:
     plt.savefig(full_file_name, dpi=300, transparent=True)
     plt.close()
@@ -172,7 +197,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
     # For all channels separately:
     if plot_single_channels:
         # Compute the PSD for all the picks:
-        psd, freqs = mne.time_frequency.psd_welch(raw, picks=picks, average="mean")
+        psd, freqs = mne.time_frequency.psd_welch(raw, picks=picks, average="mean", verbose=verbose)
         for ind, pick in enumerate(picks):
             fig, ax = plt.subplots(figsize=[15, 6])
             ax.plot(freqs, np.log(psd[np.arange(psd.shape[0]) != ind, :].T), linewidth=0.5, color="k", alpha=0.8)
@@ -191,7 +216,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
 
 
 def plot_bad_channels(raw, save_root, step, signal, file_prefix,
-                      file_extension="bads.png", plot_single_channels=False, picks="bads"):
+                      file_extension="bads.png", plot_single_channels=False, picks="bads", verbose=True):
     """
     This function plots the bad channels psd and raw signal to show what it being disarded:
     :param raw: (mne raw object)
@@ -203,6 +228,7 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
     :param file_extension: (string) file name extension
     :param plot_single_channels: (boolean) whether or not to plot single channels or only all of them superimposed
     :param picks: (list) list of the channels of interest
+    :param verbose: (bool) mne verbose level
     :return:
     """
     # Handling picks input:
@@ -223,8 +249,8 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
         # Plotting the average of the good channels with standard error for reference. Downsampling, otherwise too many
         # data points:
         good_channels_data, times = \
-            raw.copy().resample(100).get_data(picks=mne.pick_types(
-                raw.info, ecog=True, seeg=True), return_times=True)
+            raw.copy().resample(100, verbose=verbose).get_data(picks=mne.pick_types(
+                raw.info, ecog=True, seeg=True, verbose=verbose), return_times=True)
         mean_good_data = np.mean(good_channels_data.T, axis=1)
         ste_good_data = np.std(good_channels_data.T, axis=1) / \
                         np.sqrt(good_channels_data.T.shape[1])
@@ -306,12 +332,13 @@ def custom_car(raw, reference_channel_types=None, target_channel_types=None):
     return raw
 
 
-def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_type="fir",
+def notch_filtering(raw, njobs=1, verbose=True, frequency=60, remove_harmonics=True, filter_type="fir",
                     cutoff_lowpass_bw=None, cutoff_highpass_bw=None, channel_types=None):
     """
     This function filters the raw data according to the set parameters
     :param raw: (mne raw object) continuous data
     :param njobs: (int) number of jobs to preprocessing the filtering in parallel threads
+    :param verbose: (bool) verbose level for MNE
     :param frequency: (int or float) frequency to notch out.
     :param remove_harmonics: (boolean) whether or not to remove all the harmonics of the declared freq (up until the
     sampling freq)
@@ -336,7 +363,7 @@ def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_ty
     if filter_type.lower() == "fir":
         # Applying FIR if FIR in parameters
         raw.notch_filter(frequency, filter_length='auto',
-                         phase='zero', n_jobs=njobs, picks=picks)  # Default method is FIR
+                         phase='zero', n_jobs=njobs, picks=picks, verbose=verbose)  # Default method is FIR
     elif filter_type.lower() == "butterworth_4o":  # Applying butterworth 4th order
         # For the iir methods, mne notch_filter does not support to pass several frequencies at the same time.
         # It also does not support having customized cutoff frequencies.
@@ -346,9 +373,9 @@ def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_ty
         # bandpass filter (notch_cutoff_hp Hz - notch_cutoff_lp Hz)
         if cutoff_lowpass_bw != 0:
             raw.filter(cutoff_lowpass_bw, cutoff_highpass_bw,
-                       phase='zero', method='iir', n_jobs=njobs, picks=picks)
+                       phase='zero', method='iir', n_jobs=njobs, picks=picks, verbose=verbose)
         else:
-            raw.notch_filter(frequency, method='iir', n_jobs=njobs)
+            raw.notch_filter(frequency, method='iir', n_jobs=njobs, verbose=verbose)
         # If there are harmonics to filter out as well:
         if remove_harmonics:
             # Now drop the first frequency from the frequencies:
@@ -356,7 +383,7 @@ def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_ty
             # 2. call the notch_filter function for each of the harmonics to perform the filtering of the harmonics.
             # Note that we here use the standard bandwidth freq/200.
             for freq in frequencies:
-                raw.notch_filter(freq, method='iir', n_jobs=njobs, picks=picks)
+                raw.notch_filter(freq, method='iir', n_jobs=njobs, picks=picks, verbose=verbose)
 
     return raw
 
@@ -403,7 +430,7 @@ def create_metadata_from_events(epochs, metadata_column_names):
 
 
 def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_not_to_epoch=None,
-             baseline=(None, 0.0), reject_by_annotation=True, meta_data_column=None):
+             baseline=(None, 0.0), reject_by_annotation=True, meta_data_column=None, verbose=True):
     """
     This function performs the epoching according to a few parameters
     :param raw: (mne raw object) data to epochs
@@ -429,6 +456,7 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
     The list you pass is the name of the different columns. So you would pass: ["category", "duration", "position"]:
     category  | duration  | position
     Face         short        left
+    :param verbose: (bool) verbose level for MNE
     :return:
     """
     if picks == "all":
@@ -450,10 +478,10 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
     # epoching. Since we are passing a dictionary we can also use the provided keys to acces
     # the events later
     epochs = mne.Epochs(raw, events=events, event_id=events_of_interest, tmin=tmin,
-                        tmax=tmax, baseline=baseline, verbose='ERROR', picks=picks,
+                        tmax=tmax, baseline=baseline, verbose=verbose, picks=picks,
                         reject_by_annotation=reject_by_annotation)
     # Dropping the bad epochs if there were any:
-    epochs.drop_bad()
+    epochs.drop_bad(verbose=verbose)
     # Adding the meta data to the table. The meta data are created by parsing the events strings, as each substring
     # contains specific info about the trial:
     if meta_data_column is not None:
@@ -567,7 +595,7 @@ def find_interruption_index(events, event_dict, interuption_landmark, interrupti
 
 
 def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types=None,
-               do_baseline_normalization=True):
+               do_baseline_normalization=True, verbose=True):
     """
     This function computes the high gamma signal by filtering the signal in bins between a defined frequency range.
     In each frequency bin, the hilbert transform is applied and the amplitude is extracted (i.e. envelope). The envelope
@@ -583,6 +611,7 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
     :param channel_types: (dict) name of the channels for which the high gamma should be computed. This is important
     to avoid taking in electrodes which we might not want
     :param do_baseline_normalization: (bool) whether to do baseline normalization
+    :param verbose: (bool) verbose level for MNE
     :return: frequency_band_signal: (mne raw object) dictionary containing raw objects with high gamma in the different
     frequency bands
     """
@@ -620,9 +649,9 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
         raw.info["ch_names"]) if ind not in picks]
     # Creating copies of the raw for the channels for which the frequency band should be computed, and another for
     # the channels for which it shouldn't be computed, to avoid messing up the channels indices:
-    freq_band_raw = raw.copy().pick(picks)
+    freq_band_raw = raw.copy().pick(picks, verbose=verbose)
     if len(not_picks) != 0:
-        rest_raw = raw.copy().pick(not_picks)
+        rest_raw = raw.copy().pick(not_picks, verbose=verbose)
 
     # ==========================================================
     # Create frequency bins:
@@ -636,17 +665,20 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
     # ==========================================================
     # Compute HG for each frequency bin:
     for freq_bin in bins:
-        print('')
-        print('-' * 40)
-        print('Computing the frequency in band: ' + str(freq_bin))
-        # Filtering the signal and apply the hilbert:
-        print('Computing the envelope amplitude')
+        if verbose:
+            print('')
+            print('-' * 40)
+            print('Computing the frequency in band: ' + str(freq_bin))
+            # Filtering the signal and apply the hilbert:
+            print('Computing the envelope amplitude')
         bin_power = freq_band_raw.copy().filter(freq_bin[0], freq_bin[1],
-                                                n_jobs=njobs).apply_hilbert(envelope=True)
+                                                n_jobs=njobs, verbose=verbose).apply_hilbert(envelope=True,
+                                                                                             verbose=verbose)
 
         # Now, dividing the amplitude by the mean, channel wise:
         if do_baseline_normalization:
-            print('Divide by average')
+            if verbose:
+                print('Divide by average')
             bins_amp.append(divide_by_average(bin_power[:][0]))
         else:
             bins_amp.append(bin_power[:][0])
@@ -677,7 +709,7 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
                             "bands computations!")
 
     # Recreating mne raw object:
-    hg_signal = mne.io.RawArray(frequency_band, info)
+    hg_signal = mne.io.RawArray(frequency_band, info, verbose=verbose)
     # Adding back the untouched channels:
     if len(not_picks) != 0:
         hg_signal.add_channels([rest_raw])
@@ -826,86 +858,6 @@ def plot_electrode_localization(mne_object, subject, fs_dir, config, save_root, 
     return None
 
 
-def get_montage_volume_labels_wang(montage, subject, subjects_dir=None,
-                                   aseg='wang15_mplbl', dist=2):
-    """Get regions of interest near channels from a Freesurfer parcellation.
-    .. note:: This is applicable for channels inside the brain
-              (intracranial electrodes).
-    Parameters
-    ----------
-    %(montage)s
-    %(subject)s
-    %(subjects_dir)s
-    %(aseg)s
-    dist : float
-        The distance in mm to use for identifying regions of interest.
-    Returns
-    -------
-    labels : dict
-        The regions of interest labels within ``dist`` of each channel.
-    colors : dict
-        The Freesurfer lookup table colors for the labels.
-    """
-    import numpy as np
-    import os.path as op
-    from mne.channels import DigMontage
-    from mne._freesurfer import read_freesurfer_lut
-    from mne.utils import get_subjects_dir, _check_fname, _validate_type
-    from mne.transforms import apply_trans
-    from mne.surface import _voxel_neighbors, _VOXELS_MAX
-    from collections import OrderedDict
-
-    _validate_type(montage, DigMontage, 'montage')
-    _validate_type(dist, (int, float), 'dist')
-
-    if dist < 0 or dist > 10:
-        raise ValueError('`dist` must be between 0 and 10')
-
-    import nibabel as nib
-    subjects_dir = get_subjects_dir(subjects_dir, raise_error=True)
-    aseg = _check_fname(op.join(subjects_dir, subject, 'mri', aseg + '.mgz'),
-                        overwrite='read', must_exist=True)
-    aseg = nib.load(aseg)
-    aseg_data = np.array(aseg.dataobj)
-
-    # read freesurfer lookup table
-    lut, fs_colors = read_freesurfer_lut(
-        op.join(subjects_dir, 'wang2015_LUT.txt'))  # put the wang2015_LUT.txt into the freesurfer subjects dir
-    label_lut = {v: k for k, v in lut.items()}
-
-    # assert that all the values in the aseg are in the labels
-    assert all([idx in label_lut for idx in np.unique(aseg_data)])
-
-    # get transform to surface RAS for distance units instead of voxels
-    vox2ras_tkr = aseg.header.get_vox2ras_tkr()
-
-    ch_dict = montage.get_positions()
-    if ch_dict['coord_frame'] != 'mri':
-        raise RuntimeError('Coordinate frame not supported, expected '
-                           '"mri", got ' + str(ch_dict['coord_frame']))
-    ch_coords = np.array(list(ch_dict['ch_pos'].values()))
-
-    # convert to freesurfer voxel space
-    ch_coords = apply_trans(
-        np.linalg.inv(aseg.header.get_vox2ras_tkr()), ch_coords * 1000)
-    labels = OrderedDict()
-    for ch_name, ch_coord in zip(montage.ch_names, ch_coords):
-        if np.isnan(ch_coord).any():
-            labels[ch_name] = list()
-        else:
-            voxels = _voxel_neighbors(
-                ch_coord, aseg_data, dist=dist, vox2ras_tkr=vox2ras_tkr,
-                voxels_max=_VOXELS_MAX)
-            label_idxs = set([aseg_data[tuple(voxel)].astype(int)
-                              for voxel in voxels])
-            labels[ch_name] = [label_lut[idx] for idx in label_idxs]
-
-    all_labels = set([label for val in labels.values() for label in val])
-    colors = {label: tuple(fs_colors[label][:3] / 255) + (1.,)
-              for label in all_labels}
-    return labels, colors
-
-
 def roi_mapping(mne_object, list_parcellations, subject, fs_dir, config, save_root, step, signal, file_prefix,
                 file_extension='mapping.csv'):
     """
@@ -940,23 +892,18 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, config, save_ro
             # Convert the montge from mni to mri:
             montage = mne_object.get_montage()
             montage.apply_trans(mne.transforms.Transform(fro='mni_tal', to='mri', trans=np.eye(4)))
-            if parcellation == "wang15_mplbl":
-                labels, _ = get_montage_volume_labels_wang(montage, "fsaverage", subjects_dir=None,
-                                                           aseg='wang15_mplbl', dist=2)
-            else:
-                labels, _ = \
-                    mne.get_montage_volume_labels(montage, "fsaverage", subjects_dir=subjects_dir, aseg=parcellation)
+            labels, _ = \
+                mne.get_montage_volume_labels(montage, "fsaverage", subjects_dir=subjects_dir, aseg=parcellation)
         else:
-            if parcellation == "wang15_mplbl":
-                labels, _ = get_montage_volume_labels_wang(mne_object.get_montage(), subject, subjects_dir=fs_dir,
-                                                           aseg=parcellation, dist=2)
-            else:
-                labels, _ = mne.get_montage_volume_labels(
-                    mne_object.get_montage(), subject, subjects_dir=fs_dir, aseg=parcellation)
+            labels, _ = mne.get_montage_volume_labels(
+                mne_object.get_montage(), subject, subjects_dir=fs_dir, aseg=parcellation)
         # Appending the electrodes roi to the table:
-        for ind, channel in enumerate(labels.keys()):
-            labels_df[parcellation] = labels_df[parcellation].append(
-                pd.DataFrame({"channel": channel, "region": "/".join(labels[channel])}, index=[ind]))
+        labels_df[parcellation] = (
+            pd.concat([pd.DataFrame({
+                "channel": ch,
+                "region": "/".join(labels[ch])
+            }, index=[ind])
+                for ind, ch in enumerate(labels.keys())]))
     # Creating the directory if it doesn't exists:
     if not os.path.isdir(save_path):
         # Creating the directory:
@@ -1204,7 +1151,7 @@ def project_elec_to_surf(raw, subjects_dir, subject, montage_space="T1"):
 
 def laplacian_referencing(raw, reference_mapping, channel_types=None,
                           n_jobs=1, relocate_edges=True,
-                          subjects_dir=None, subject=None, montage_space=None):
+                          subjects_dir=None, subject=None, montage_space=None, verbose=True):
     """
     This function performs laplacian referencing by subtracting the average of two neighboring electrodes to the
     central one. So for example, if you have electrodes G1, G2, G3, you can reference G2 as G2 = G2 - mean(G1, G2).
@@ -1288,7 +1235,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
                           (montage.dig[ch_ind]["r"][2] + montage.dig[ref_ind]["r"][2]) / 2,
                 montage.dig[ch_ind]["r"] = np.array([x, y, z])
                 # Adding the montage back:
-                raw.set_montage(montage, on_missing="warn")
+                raw.set_montage(montage, on_missing="ignore", verbose=verbose)
 
     # Projecting the ecog channels to the surface if they were relocated:
     if relocate_edges:
@@ -1387,16 +1334,15 @@ def create_mni_montage(channels, bids_path, fs_dir):
         # Create the name of the mni file coordinates:
         coordinates_file = 'sub-{}_ses-{}_space-fsaverage_electrodes.tsv'.format(subject,
                                                                                  subject_path.session)
-        channel_file = 'sub-{}_ses-{}_space-fsaverage_channels.tsv'.format(subject,
-                                                                           subject_path.session)
+        channel_file = 'sub-{}_ses-{}_task-{}_channels.tsv'.format(subject, subject_path.session, bids_path.task)
         # Load the coordinates:
         coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
-        channels_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
+        channels_df = pd.read_csv(Path(subject_path.directory, channel_file), sep='\t')
         # Extract the channels of interest:
         subject_coordinates = coordinates_df.loc[coordinates_df['name'].isin(
             subject_channels), ['name', 'x', 'y', 'z']]
         # Add the channel type:
-        subject_coordinates['ch_types'] = [channels_df.loc[channels_df['name'] == channel, 'type']
+        subject_coordinates['ch_types'] = [channels_df.loc[channels_df['name'] == channel, 'type'].item().lower()
                                            for channel in subject_coordinates['name']]
         # Make sure to append the name of the subject to the channels coordinates for when we recombine:
         subject_coordinates['name'] = ['-'.join([subject, channel])
@@ -1464,6 +1410,7 @@ def get_roi_channels(channels, rois, bids_path, atlas):
 
 
 from mne_bids import BIDSPath
+
 bids_root = "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids"
 bids_path = BIDSPath(root=bids_root, subject='SF102',
                      session='V1',
@@ -1477,4 +1424,3 @@ example_epochs_path = Path(bids_root, 'derivatives', 'preprocessing',
                            "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
                                                                                    "V1", "Dur",
                                                                                    "ieeg"))
-
