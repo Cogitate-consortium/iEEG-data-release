@@ -36,7 +36,7 @@ def get_cmap_rgb_values(values, cmap=None, center=None):
     if cmap is None:
         cmap = "RdYlBu_r"
     if center is None:
-        center = (max(values) - min(values)) / 2
+        center = np.mean([min(values), max(values)])
     # Create the normalization function:
     norm = matplotlib.colors.TwoSlopeNorm(vmin=min(values), vcenter=center, vmax=max(values))
     colormap = colormaps.get_cmap(cmap)
