@@ -14,6 +14,7 @@ import matplotlib
 import mne
 from mne.viz import plot_alignment, snapshot_brain_montage
 from mne.datasets import fetch_fsaverage
+from mne_bids import convert_montage_to_mri
 from nibabel.freesurfer.io import read_geometry
 
 import matplotlib.pyplot as plt
@@ -817,6 +818,12 @@ def add_fiducials(raw, fs_directory, subject_id):
         subjects_dir = Path(sample_path, 'subjects')
         montage.add_mni_fiducials(subjects_dir)
         trans = 'fsaverage'
+    elif montage.get_positions()['coord_frame'] == 'ras':
+        # we need to go from scanner RAS back to surface RAS (requires recon-all)
+        convert_montage_to_mri(montage, subject_id, subjects_dir=fs_directory)
+        # Add the estimated fiducials:
+        montage.add_estimated_fiducials(subject_id, fs_directory)
+        trans = mne.channels.compute_native_head_t(montage)
     else:
         montage.add_estimated_fiducials(subject_id, fs_directory)
         trans = mne.channels.compute_native_head_t(montage)
@@ -905,9 +912,8 @@ def plot_electrode_localization(mne_object, subject, fs_dir, config, save_root, 
                 for ch in list(xy.keys()):
                     ax.annotate(ch, xy[ch], fontsize=14, color="white",
                                 xytext=(-5, -5), xycoords='data', textcoords='offset points')
-            plt.show()
-            # plt.savefig(full_file_name, transparent=True)
-            # plt.close()
+            plt.savefig(full_file_name, transparent=True)
+            plt.close()
             brain_snapshot_files.append(full_file_name)
         mne.viz.close_3d_figure(fig)
     # Saving the config:
@@ -951,7 +957,13 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, config, save_ro
             montage = mne_object.get_montage()
             montage.apply_trans(mne.transforms.Transform(fro='mni_tal', to='mri', trans=np.eye(4)))
             labels, _ = \
-                mne.get_montage_volume_labels(montage, "fsaverage", subjects_dir=subjects_dir, aseg=parcellation)
+                mne.get_montage_volume_labels(montage, "fsaverage", subjects_dir=subjects_dir,
+                                              aseg=parcellation)
+        elif mne_object.get_montage().get_positions()['coord_frame'] == 'ras':
+            montage = mne_object.get_montage()
+            # we need to go from scanner RAS back to surface RAS (requires recon-all)
+            convert_montage_to_mri(montage, subject, subjects_dir=fs_dir)
+            labels, _ = mne.get_montage_volume_labels(montage, subject, subjects_dir=fs_dir, aseg=parcellation)
         else:
             labels, _ = mne.get_montage_volume_labels(
                 mne_object.get_montage(), subject, subjects_dir=fs_dir, aseg=parcellation)
