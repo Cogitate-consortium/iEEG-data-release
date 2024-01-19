@@ -24,6 +24,63 @@ import pandas as pd
 import json
 
 
+def detrend_runs(raw, njobs=1, verbose='ERROR'):
+    """
+    This function detrends the run. If the raw initially consisted of several files that were concatenated, the
+    deterending will be performed separately for each run. Otherwise, it will done in one go.
+    :param raw: (mne raw object)
+    :param njobs: (int)
+    :param verbose: (int)
+    """
+    # Check whether there are any annotations marking the merging:
+    if len(np.where(raw.annotations.description == "BAD boundary")[0]) > 0:
+        # Prepare a list to store the raws:
+        raws_list = []
+        # Extract the boundaries time stamps:
+        boundaries_ts = raw.annotations.onset[np.where(raw.annotations.description == "BAD boundary")[0]]
+        for i in range(boundaries_ts.shape[0] + 1):
+            if i == 0:
+                # Extract the segment:
+                r = raw.copy().crop(0, boundaries_ts[i], include_tmax=False)
+                # Apply detrending:
+                r.apply_function(lambda ch: ch - np.mean(ch),
+                                 n_jobs=njobs,
+                                 channel_wise=True, verbose=verbose)
+                # Append to the rest:
+                raws_list.append(r)
+            elif i == boundaries_ts.shape[0]:
+                # Extract the segment:
+                r = raw.copy().crop(boundaries_ts[i-1], raw.times[-1], include_tmax=True)
+                # Apply detrending:
+                r.apply_function(lambda ch: ch - np.mean(ch),
+                                 n_jobs=njobs,
+                                 channel_wise=True, verbose=verbose)
+                # Append to the rest:
+                raws_list.append(r)
+            else:
+                # Extract the segment:
+                r = raw.copy().crop(boundaries_ts[i-1], boundaries_ts[i], include_tmax=False)
+                # Apply detrending:
+                r.apply_function(lambda ch: ch - np.mean(ch),
+                                 n_jobs=njobs,
+                                 channel_wise=True, verbose=verbose)
+                # Append to the rest:
+                raws_list.append(r)
+
+        raw_detrend = mne.concatenate_raws(raws_list)
+        # Make sure that no samples got missing:
+        assert np.array_equal(raw_detrend.times, raw.times), "The times of the detrend data got altered!!!"
+        assert all([ch == raw_detrend.ch_names[i] for i, ch in enumerate(raw.ch_names)]), \
+            "The times of the detrend data got altered!!!"
+    else:  # Otherwise, detrend the whole recording:
+        raw_detrend = raw.copy()
+        raw_detrend.apply_function(lambda ch: ch - np.mean(ch),
+                                   n_jobs=njobs,
+                                   channel_wise=True, verbose=verbose)
+
+    return raw_detrend
+
+
 def get_cmap_rgb_values(values, cmap=None, center=None):
     """
     This function takes in a list of values and returns a set of RGB values mapping onto a specified color bar. If a
