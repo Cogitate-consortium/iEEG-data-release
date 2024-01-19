@@ -2,10 +2,8 @@ import json
 import os
 from pathlib import Path
 
-import pandas as pd
 import numpy as np
 import mne
-import matplotlib
 import matplotlib.pyplot as plt
 from sklearn.pipeline import make_pipeline
 from sklearn import svm
@@ -14,9 +12,10 @@ from sklearn.feature_selection import SelectKBest, f_classif
 from mne.decoding import (GeneralizingEstimator, cross_val_multiscore, get_coef, LinearModel)
 
 from HelperFunctions import baseline_scaling
+import environment_variables as ev
 
 
-def decoding(config, subjects, bids_root):
+def decoding(config, subjects):
     print("-" * 40)
     print("Welcome to Decoding!")
     print("The onset responsive channels of the following subjects will be determined: ")
@@ -40,10 +39,10 @@ def decoding(config, subjects, bids_root):
             param = json.load(f)
 
         # Create path to save the data:
-        save_root_results = Path(bids_root, 'derivatives', 'decoding',
+        save_root_results = Path(ev.bids_root, 'derivatives', 'decoding',
                                  'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                                  param["signal"], "results")
-        save_root_figures = Path(bids_root, 'derivatives', 'decoding',
+        save_root_figures = Path(ev.bids_root, 'derivatives', 'decoding',
                                  'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                                  param["signal"], "figures")
         if not os.path.isdir(save_root_results):
@@ -59,7 +58,7 @@ def decoding(config, subjects, bids_root):
         # ======================================================================================================
         # Load and prepare the data:
         # Set path to the data:
-        epochs_file = Path(bids_root, 'derivatives', '../preprocessing',
+        epochs_file = Path(ev.bids_root, 'derivatives', '../preprocessing',
                            'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                            "epoching", param["signal"],
                            "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
@@ -178,7 +177,7 @@ def decoding(config, subjects, bids_root):
         subjects_scores.append(np.mean(scores, axis=0))
 
     # Save all subjects results in a separate directory:
-    save_root_results = Path(bids_root, 'derivatives', 'decoding',
+    save_root_results = Path(ev.bids_root, 'derivatives', 'decoding',
                              'sub-' + "all", 'ses-' + param["session"], param["data_type"],
                              param["signal"], "results")
     if not os.path.isdir(save_root_results):
@@ -195,5 +194,4 @@ def decoding(config, subjects, bids_root):
 if __name__ == "__main__":
     config_file = r"decoding_config-default.json"
     subjects_list = ["SF102"]
-    decoding(config_file, subjects_list,
-             "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids")
+    decoding(config_file, subjects_list)

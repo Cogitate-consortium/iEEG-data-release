@@ -10,6 +10,7 @@ from HelperFunctions import (notch_filtering, \
                              plot_bad_channels, custom_car, laplacian_referencing,
                              detrend_runs, compute_hg, compute_erp, epoching, roi_mapping,
                              plot_electrode_localization)
+import environment_variables as ev
 
 SUPPORTED_STEPS = [
     "notch_filtering",
@@ -41,7 +42,7 @@ ERROR_SIGNAL_MISSING = "For the preprocessing step {step}, you have passed the s
                        "\ngenerated. Make sure to check your config file"
 
 
-def preprocessing(config, subjects, bids_root, verbose=False):
+def preprocessing(config, subjects, verbose=False):
     print("-" * 40)
     print("Welcome to preprocessing!")
     print("The following subjects will now be preprocessed: ")
@@ -64,7 +65,7 @@ def preprocessing(config, subjects, bids_root, verbose=False):
             param = json.load(f)
 
         # Create path to save the data:
-        save_root = Path(bids_root, 'derivatives', 'preprocessing',
+        save_root = Path(ev.bids_root, 'derivatives', 'preprocessing',
                          'sub-' + subject, 'ses-' + param["session"], param["data_type"])
         if not os.path.isdir(save_root):
             # Creating the directory:
@@ -77,7 +78,7 @@ def preprocessing(config, subjects, bids_root, verbose=False):
         # Preparing the data:
         # --------------------------------------------------------------------------------------------------------------
         # Creating the bids path object:
-        bids_path = BIDSPath(root=bids_root, subject=subject,
+        bids_path = BIDSPath(root=ev.bids_root, subject=subject,
                              session=param["session"],
                              datatype=param["data_type"],
                              task=param["task"])
@@ -274,7 +275,7 @@ def preprocessing(config, subjects, bids_root, verbose=False):
                         raw[signal], reference_mapping, bad_channels = \
                             laplacian_referencing(raw[signal], laplacian_mapping,
                                                   verbose=verbose,
-                                                  subjects_dir=param["fs_dir"],
+                                                  subjects_dir=ev.fs_directory,
                                                   subject="sub-" + subject,
                                                   montage_space=param["montage_space"],
                                                   **step_parameters[signal])
@@ -425,7 +426,7 @@ def preprocessing(config, subjects, bids_root, verbose=False):
                 step_parameters = param[step]
                 # First, relocating the free surfer directory:
                 subject_free_surfer_dir = Path(
-                    param["fs_dir"], "sub-" + subject)
+                    ev.fs_directory, "sub-" + subject)
                 assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this "
                                                           "subject! Make sure to download it")
 
@@ -436,7 +437,7 @@ def preprocessing(config, subjects, bids_root, verbose=False):
                         # Extract the anatomical labels:
                         electrodes_mapping_df = roi_mapping(raw["broadband"],
                                                             step_parameters[signal]["list_parcellations"],
-                                                            "sub-" + subject, param["fs_dir"], param, save_root, step,
+                                                            "sub-" + subject, ev.fs_directory, param, save_root, step,
                                                             signal, file_prefix, file_extension='mapping.csv')
 
                         # Get a list of the channels that are outside the brain:
@@ -461,7 +462,7 @@ def preprocessing(config, subjects, bids_root, verbose=False):
                         # Doing the probabilistic mapping onto the different atlases:
                         # Extract the anatomical labels:
                         electrodes_mapping_df = roi_mapping(epochs["broadband"], step_parameters["list_parcellations"],
-                                                            "sub-" + subject, param["fs_dir"], config, save_root, step,
+                                                            "sub-" + subject, ev.fs_directory, config, save_root, step,
                                                             signal, file_prefix, file_extension='mapping.csv')
 
                         # Get a list of the channels that are outside the brain:
@@ -499,8 +500,8 @@ def preprocessing(config, subjects, bids_root, verbose=False):
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 # First, relocating the free surfer directory:
-                subject_free_surfer_dir = Path(
-                    param["fs_dir"], "sub-" + subject)
+                subject_free_surfer_dir = Path(ev.fs_directory, "sub-" + subject)
+                print(subject_free_surfer_dir)
                 assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this "
                                                           "subject! Make sure to download it")
 
@@ -509,12 +510,12 @@ def preprocessing(config, subjects, bids_root, verbose=False):
                     # compatibility
                     if "raw" in locals():
                         # Plotting the electrodes localization on the brain surface
-                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, param["fs_dir"], param,
+                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, ev.fs_directory, param,
                                                     save_root, step, signal, file_prefix,
                                                     montage_space=param["montage_space"], file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=False)
-                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, param["fs_dir"], param,
+                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, ev.fs_directory, param,
                                                     save_root, step, signal, file_prefix,
                                                     montage_space=param["montage_space"], file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
@@ -522,12 +523,12 @@ def preprocessing(config, subjects, bids_root, verbose=False):
 
                     elif "epochs" in locals():
                         # Plotting the electrodes localization on the brain surface
-                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, param["fs_dir"],
+                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, ev.fs_directory,
                                                     param, save_root, step, signal, file_prefix,
                                                     montage_space=param["montage_space"], file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=False)
-                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, param["fs_dir"],
+                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, ev.fs_directory,
                                                     param, save_root, step, signal, file_prefix,
                                                     montage_space=param["montage_space"], file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
@@ -538,6 +539,5 @@ if __name__ == "__main__":
     config_file = r"preprocessing_config-default.json"
     subjects_list = ["CE103"]
     preprocessing(config_file, subjects_list,
-                  r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\data_release\bids",
                   verbose='CRITICAL')
 

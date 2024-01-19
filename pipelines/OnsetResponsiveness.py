@@ -11,8 +11,10 @@ from pingouin import ttest
 
 from HelperFunctions import baseline_scaling
 
+import environment_variables as ev
 
-def onset_responsiveness(config, subjects, bids_root,
+
+def onset_responsiveness(config, subjects,
                          plot_single_channels=True, plot_only_responsive=True):
     print("-" * 40)
     print("Welcome to Onset Responsiveness!")
@@ -38,10 +40,10 @@ def onset_responsiveness(config, subjects, bids_root,
             param = json.load(f)
 
         # Create path to save the data:
-        save_root_results = Path(bids_root, 'derivatives', 'onset_responsiveness',
+        save_root_results = Path(ev.bids_root, 'derivatives', 'onset_responsiveness',
                                  'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                                  param["signal"], "results")
-        save_root_figures = Path(bids_root, 'derivatives', 'onset_responsiveness',
+        save_root_figures = Path(ev.bids_root, 'derivatives', 'onset_responsiveness',
                                  'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                                  param["signal"], "figures")
         if not os.path.isdir(save_root_results):
@@ -60,7 +62,7 @@ def onset_responsiveness(config, subjects, bids_root,
         # ======================================================================================================
         # Load and prepare the data:
         # Set path to the data:
-        epochs_file = Path(bids_root, 'derivatives', '../preprocessing',
+        epochs_file = Path(ev.bids_root, 'derivatives', '../preprocessing',
                            'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                            "epoching", param["signal"],
                            "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
@@ -180,8 +182,8 @@ def onset_responsiveness(config, subjects, bids_root,
                     plt.savefig(fig_file)
                     plt.close()
 
-    # Save all subjects results in a separate directory:
-    save_root_results = Path(bids_root, 'derivatives', 'onset_responsiveness',
+    # Save all subjects results in the same directory:
+    save_root_results = Path(ev.bids_root, 'derivatives', 'onset_responsiveness',
                              'sub-' + "all", 'ses-' + param["session"], param["data_type"],
                              param["signal"], "results")
     if not os.path.isdir(save_root_results):
@@ -203,5 +205,4 @@ if __name__ == "__main__":
     config_file = r"onset_responsiveness_config-default.json"
     subjects_list = ["SF102"]  # ["SF124", "SF125", "SF126"]
     onset_responsiveness(config_file, subjects_list,
-                         "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids",
                          plot_single_channels=False, plot_only_responsive=False)

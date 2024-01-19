@@ -1,6 +1,4 @@
 {
-    "raw_root": "/hpc/XNAT/COGITATE/ECoG/Raw/projects/CoG_ECoG_PhaseII",
-    "bids_root": "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids",
     "njobs": 1,
     "session": "V1",
     "task": "Dur",
