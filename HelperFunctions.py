@@ -848,8 +848,9 @@ def plot_electrode_localization(mne_object, subject, fs_dir, config, save_root, 
                 for ch in list(xy.keys()):
                     ax.annotate(ch, xy[ch], fontsize=14, color="white",
                                 xytext=(-5, -5), xycoords='data', textcoords='offset points')
-            plt.savefig(full_file_name, transparent=True)
-            plt.close()
+            plt.show()
+            # plt.savefig(full_file_name, transparent=True)
+            # plt.close()
             brain_snapshot_files.append(full_file_name)
         mne.viz.close_3d_figure(fig)
     # Saving the config:
@@ -1303,7 +1304,55 @@ def baseline_scaling(epochs, correction_method="ratio", baseline=(None, 0), pick
     return None
 
 
-def create_mni_montage(channels, bids_path, fs_dir):
+def project_montage_to_surf(montage, channel_types, subject, fs_dir):
+    """
+    This function projects the electrodes to the pial surface. Note that this is only ever done on the ecog channels,
+    never on the seeg!
+    """
+    # Read the surfaces:
+    left_surf = read_geometry(Path(fs_dir, subject, "surf", "lh.pial"))
+    right_surf = read_geometry(Path(fs_dir, subject, "surf", "rh.pial"))
+    # Extract the channels from the montage:
+    ecog_channels = [ch for ch in montage.ch_names if channel_types[ch] == "ecog"]
+
+    # Looping through each of these channels:
+    for channel in ecog_channels:
+        # Get the channel index
+        ch_ind = montage.ch_names.index(channel)
+        # Get the channel coordinates:
+        ch_coord = montage.dig[ch_ind]["r"]
+        # Checking if the coordinates are NAN:
+        if math.isnan(ch_coord[0]):
+            continue
+        if ch_coord[0] < 0:
+            # Compute x y and z distances to each vertex in the surface:
+            b_x = np.absolute(left_surf[0][:, 0] - ch_coord[0] * 1000)
+            b_y = np.absolute(left_surf[0][:, 1] - ch_coord[1] * 1000)
+            b_z = np.absolute(left_surf[0][:, 2] - ch_coord[2] * 1000)
+            # Find the shortest distance:
+            d = np.sqrt(np.sum([np.square(b_x), np.square(b_y), np.square(b_z)], axis=0))
+            # Get the index of the smallest one:
+            min_vert_ind = np.argmin(d)
+            montage.dig[ch_ind]["r"] = np.squeeze(np.array(
+                [left_surf[0][min_vert_ind, 0] * 0.001, left_surf[0][min_vert_ind, 1] * 0.001,
+                 left_surf[0][min_vert_ind, 2] * 0.001]))
+        else:
+            # Compute x y and z distances to each vertex in the surface:
+            b_x = np.absolute(right_surf[0][:, 0] - ch_coord[0] * 1000)
+            b_y = np.absolute(right_surf[0][:, 1] - ch_coord[1] * 1000)
+            b_z = np.absolute(right_surf[0][:, 2] - ch_coord[2] * 1000)
+            # Find the shortest distance:
+            d = np.sqrt(np.sum([np.square(b_x), np.square(b_y), np.square(b_z)], axis=0))
+            # Get the index of the smallest one:
+            min_vert_ind = np.argmin(d)
+            montage.dig[ch_ind]["r"] = np.squeeze(np.array(
+                [right_surf[0][min_vert_ind, 0] * 0.001, right_surf[0][min_vert_ind, 1] * 0.001,
+                 right_surf[0][min_vert_ind, 2] * 0.001]))
+
+    return montage
+
+
+def create_mni_montage(channels, bids_path, fs_dir, fsaverage_dir):
     """
     This function fetches the mni coordinates of a set of channels. Importantly, the channels must
     consist of a string with the subject identifier and the channel identifier separated by a minus,
@@ -1314,14 +1363,16 @@ def create_mni_montage(channels, bids_path, fs_dir):
     the subject identifier as well as the channel identifier, like SF102-G1.
     :param bids_path: (mne-bids bidsPATH object) contains all the information to fetch the coordinates.
     :param fs_dir: (string or pathlib path object) path to the free surfer root folder containing the fsaverage
+    :param fsaverage_dir: (string or pathlib path object) path to the free surfer root folder containing the fsaverage
     :return: info (mne info object) mne info object with the channels info, including position in MNI space
     """
     from mne_bids import BIDSPath
-    # Prepare table to store the coordinates:
-    channels_coordinates = []
+    from mne.transforms import apply_trans
     # First, extract the name of each subject present in the channels list:
     subjects = list(set([channel.split('-')[0] for channel in channels]))
-
+    # Prepare a dictionary:
+    mni_coords = {}
+    channels_types = {}
     for subject in subjects:
         # Extract this participant's channels:
         subject_channels = [channel.split('-')[1] for channel in channels
@@ -1332,36 +1383,46 @@ def create_mni_montage(channels, bids_path, fs_dir):
                                 datatype=bids_path.datatype,
                                 task=bids_path.task)
         # Create the name of the mni file coordinates:
-        coordinates_file = 'sub-{}_ses-{}_space-fsaverage_electrodes.tsv'.format(subject,
-                                                                                 subject_path.session)
+        coordinates_file = 'sub-{}_ses-{}_space-Other_electrodes.tsv'.format(subject,
+                                                                             subject_path.session)
         channel_file = 'sub-{}_ses-{}_task-{}_channels.tsv'.format(subject, subject_path.session, bids_path.task)
         # Load the coordinates:
         coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
         channels_df = pd.read_csv(Path(subject_path.directory, channel_file), sep='\t')
-        # Extract the channels of interest:
-        subject_coordinates = coordinates_df.loc[coordinates_df['name'].isin(
-            subject_channels), ['name', 'x', 'y', 'z']]
-        # Add the channel type:
-        subject_coordinates['ch_types'] = [channels_df.loc[channels_df['name'] == channel, 'type'].item().lower()
-                                           for channel in subject_coordinates['name']]
-        # Make sure to append the name of the subject to the channels coordinates for when we recombine:
-        subject_coordinates['name'] = ['-'.join([subject, channel])
-                                       for channel in subject_coordinates['name']]
-        # Append to the rest
-        channels_coordinates.append(subject_coordinates)
 
-    # Concatenating everything into 1 table:
-    channels_coordinates = pd.concat(channels_coordinates).reset_index(drop=True)
+        # Get the position:
+        position = coordinates_df.loc[coordinates_df['name'].isin(
+            subject_channels), ['x', 'y', 'z']].to_numpy()
+        # Get the types of the channels:
+        subject_channel_type = channels_df.loc[channels_df['name'].isin(subject_channels),
+        ['name', 'type']].set_index('name').to_dict()['type']
+        subject_channel_type = {"-".join([subject, ch]): subject_channel_type[ch] for ch in subject_channel_type.keys()}
+        channels_types.update(subject_channel_type)
+        # Create the montage:
+        montage = mne.channels.make_dig_montage(ch_pos=dict(zip(["-".join([subject, ch]) for ch in subject_channels],
+                                                                position)),
+                                                coord_frame="mri")
+        # Add estimated fiducials
+        montage.add_estimated_fiducials("sub-" + subject, fs_dir)
+        # Fetch the transformation from mri -> mni
+        mri_mni_trans = mne.read_talxfm("sub-" + subject, fs_dir)
+        # Extract the channel position from the montage:
+        ch_pos = montage.get_positions()['ch_pos']
+        # Apply affine transformation to each:
+        for ind, ch in enumerate(ch_pos.keys()):
+            mni_coords[ch] = apply_trans(mri_mni_trans, ch_pos[ch] * 1000) / 1000
 
-    # Create one single montage out of it:
-    position = channels_coordinates[["x", "y", "z"]].to_numpy()
     # Create the montage:
-    montage = mne.channels.make_dig_montage(ch_pos=dict(zip(channels, position)),
+    montage = mne.channels.make_dig_montage(ch_pos=mni_coords,
                                             coord_frame='mni_tal')
-    # Making sure to add the mni fiducials:
-    montage.add_mni_fiducials(fs_dir)
+    # Make sure that the channel types are in lower case:
+    channels_types = {ch: channels_types[ch].lower() for ch in channels_types}
+    # Project the montage to the surface:
+    montage = project_montage_to_surf(montage, channels_types, "fsaverage", fsaverage_dir)
+    # Add the MNI fiducials
+    montage.add_mni_fiducials(fsaverage_dir)
     # In mne-python, plotting electrodes on the brain requires some additional info about the channels:
-    info = mne.create_info(ch_names=channels, ch_types=channels_coordinates['ch_types'].to_list(), sfreq=100)
+    info = mne.create_info(ch_names=channels, ch_types=list(channels_types.values()), sfreq=100)
     # Add the montage:
     info.set_montage(montage)
 
@@ -1407,20 +1468,3 @@ def get_roi_channels(channels, rois, bids_path, atlas):
                 break
 
     return roi_channels
-
-
-from mne_bids import BIDSPath
-
-bids_root = "C://Users//alexander.lepauvre//Documents//GitHub//iEEG-data-release//bids"
-bids_path = BIDSPath(root=bids_root, subject='SF102',
-                     session='V1',
-                     datatype='ieeg',
-                     task='Dur')
-subject = 'SF102'
-channel = 'LO1'
-example_epochs_path = Path(bids_root, 'derivatives', 'preprocessing',
-                           'sub-' + subject, 'ses-' + "V1", 'ieeg',
-                           "epoching", 'high_gamma',
-                           "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
-                                                                                   "V1", "Dur",
-                                                                                   "ieeg"))
