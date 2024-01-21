@@ -62,7 +62,7 @@ def onset_responsiveness(config, subjects,
         # ======================================================================================================
         # Load and prepare the data:
         # Set path to the data:
-        epochs_file = Path(ev.bids_root, 'derivatives', '../preprocessing',
+        epochs_file = Path(ev.bids_root, 'derivatives', 'preprocessing',
                            'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                            "epoching", param["signal"],
                            "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
@@ -203,6 +203,6 @@ def onset_responsiveness(config, subjects,
 
 if __name__ == "__main__":
     config_file = r"onset_responsiveness_config-default.json"
-    subjects_list = ["SF102"]  # ["SF124", "SF125", "SF126"]
+    subjects_list = ["CF102"]  # ["SF124", "SF125", "SF126"]
     onset_responsiveness(config_file, subjects_list,
-                         plot_single_channels=False, plot_only_responsive=False)
+                         plot_single_channels=True, plot_only_responsive=True)
