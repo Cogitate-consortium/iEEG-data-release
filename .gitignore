@@ -1,5 +1,6 @@
 # Custom
-bids/
+bids_old/
+data_release/
 .idea/
 
 # Byte-compiled / optimized / DLL files
