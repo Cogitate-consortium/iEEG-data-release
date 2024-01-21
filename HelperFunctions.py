@@ -51,7 +51,7 @@ def detrend_runs(raw, njobs=1, verbose='ERROR'):
                 raws_list.append(r)
             elif i == boundaries_ts.shape[0]:
                 # Extract the segment:
-                r = raw.copy().crop(boundaries_ts[i-1], raw.times[-1], include_tmax=True)
+                r = raw.copy().crop(boundaries_ts[i - 1], raw.times[-1], include_tmax=True)
                 # Apply detrending:
                 r.apply_function(lambda ch: ch - np.mean(ch),
                                  n_jobs=njobs,
@@ -60,7 +60,7 @@ def detrend_runs(raw, njobs=1, verbose='ERROR'):
                 raws_list.append(r)
             else:
                 # Extract the segment:
-                r = raw.copy().crop(boundaries_ts[i-1], boundaries_ts[i], include_tmax=False)
+                r = raw.copy().crop(boundaries_ts[i - 1], boundaries_ts[i], include_tmax=False)
                 # Apply detrending:
                 r.apply_function(lambda ch: ch - np.mean(ch),
                                  n_jobs=njobs,
@@ -897,11 +897,13 @@ def plot_electrode_localization(mne_object, subject, fs_dir, config, save_root, 
         for ori in snapshot_orientations.keys():
             if plot_elec_name:
                 # Generating the full file name:
-                full_file_name = Path(save_path, '{}_desc-{}_ieeg_view-{}_names{}'.format(file_prefix, step,
-                                                                                          ori, file_extension))
+                full_file_name = Path(save_path, '{}_desc-{}_ieeg-{}_view-{}_names{}'.format(file_prefix,
+                                                                                             step,
+                                                                                             ori, ch_type,
+                                                                                             file_extension))
             else:
-                full_file_name = Path(save_path, '{}_desc-{}_ieeg_view-{}{}'.format(file_prefix, step, ori,
-                                                                                    file_extension))
+                full_file_name = Path(save_path, '{}_desc-{}_ieeg-{}_view-{}{}'.format(file_prefix, step, ori, ch_type,
+                                                                                       file_extension))
             mne.viz.set_3d_view(fig, **snapshot_orientations[ori])
             xy, im = snapshot_brain_montage(
                 fig, data_to_plot.info, hide_sensors=False)
@@ -1012,23 +1014,21 @@ def description_ch_rejection(raw, bids_path, channels_description, discard_bads=
                                                                          bids_path.task))
     channel_info = pd.read_csv(channel_info_file, sep="\t")
     # Looping through the passed descriptions:
-    bad_channels = []
+    desc_bad_channels = []
     for desc in channels_description:
-        desc_bad_channels = []
         # Looping through each channel:
         for ind, row in channel_info.iterrows():
             if isinstance(row["status_description"], str):
                 if desc in row["status_description"]:
-                    bad_channels.append(row["name"])
                     desc_bad_channels.append(row["name"])
 
     # Discarding the channels that were marked as bad as well
     if discard_bads:
         for ind, row in channel_info.iterrows():
             if row["status"] == "bad":
-                bad_channels.append(row["name"])
+                desc_bad_channels.append(row["name"])
     # Remove any redundancies:
-    bad_channels = list(set(bad_channels))
+    bad_channels = list(set(desc_bad_channels))
     # Set these channels as bad:
     raw.info['bads'].extend(bad_channels)
 
