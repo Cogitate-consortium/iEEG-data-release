@@ -2,7 +2,7 @@
     "session": "V1",
     "task": "Dur",
     "data_type": "ieeg",
-    "downsample_rate": null,
+    "downsample_rate": 512,
     "njobs": 1,
     "save_intermediary_steps": true,
     "check_plots": false,
