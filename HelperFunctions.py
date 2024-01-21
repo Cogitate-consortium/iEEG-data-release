@@ -1437,6 +1437,7 @@ def create_mni_montage(channels, bids_path, fs_dir, fsaverage_dir):
     """
     from mne_bids import BIDSPath
     from mne.transforms import apply_trans
+    import environment_variables as ev
     # First, extract the name of each subject present in the channels list:
     subjects = list(set([channel.split('-')[0] for channel in channels]))
     # Prepare a dictionary:
@@ -1452,8 +1453,8 @@ def create_mni_montage(channels, bids_path, fs_dir, fsaverage_dir):
                                 datatype=bids_path.datatype,
                                 task=bids_path.task)
         # Create the name of the mni file coordinates:
-        coordinates_file = 'sub-{}_ses-{}_space-Other_electrodes.tsv'.format(subject,
-                                                                             subject_path.session)
+        coordinates_file = 'sub-{}_ses-{}_space-ACPC_electrodes.tsv'.format(subject,
+                                                                            subject_path.session)
         channel_file = 'sub-{}_ses-{}_task-{}_channels.tsv'.format(subject, subject_path.session, bids_path.task)
         # Load the coordinates:
         coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
@@ -1470,7 +1471,9 @@ def create_mni_montage(channels, bids_path, fs_dir, fsaverage_dir):
         # Create the montage:
         montage = mne.channels.make_dig_montage(ch_pos=dict(zip(["-".join([subject, ch]) for ch in subject_channels],
                                                                 position)),
-                                                coord_frame="mri")
+                                                coord_frame="ras")
+        # we need to go from scanner RAS back to surface RAS (requires recon-all)
+        convert_montage_to_mri(montage, "sub-" + subject, subjects_dir=ev.fs_directory)
         # Add estimated fiducials
         montage.add_estimated_fiducials("sub-" + subject, fs_dir)
         # Fetch the transformation from mri -> mni
