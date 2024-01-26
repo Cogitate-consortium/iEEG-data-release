@@ -98,9 +98,6 @@ def preprocessing(config, subjects, verbose=False):
         # Detrending the data:
         print("Detrending the data")
         raw["broadband"] = detrend_runs(raw["broadband"])
-        raw["broadband"].apply_function(lambda ch: ch - np.mean(ch),
-                                        n_jobs=param["njobs"],
-                                        channel_wise=True, verbose=verbose)
 
         # Create the events in the signal from the annotation for later use:
         print('Creating annotations')
