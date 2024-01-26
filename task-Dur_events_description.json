@@ -1,0 +1,152 @@
+{
+  "TaskName": "Dur",
+  "TaskDescription": "Description of the experimental factors and their level with the correct syntax to access them from the mne epochs object. Note that factor and level names are case sensitive. We describe the syntax for each condition separately. Note however that you can fetch a combination of factors from the epochs using forward slash. For example, if you wish to fetch the face target trials, you can comhine both conditions like so: epochs['face/Relevant target'] will fetch all faces target trials. In addition, the epochs objects are equipped with metadata, where the name of the column is the name of the factor and the level follow the same nomenclature as below. This can be used for more sophisticated trial filtering and retrieval.",
+  "ExperimentalDesign": {
+    "ExperimentalFactors": {
+      "event type": {
+        "description": "marks the different events occuring within a trial.",
+        "FactorType": "categorical",
+        "Factor1": {
+          "Name": "stimulus onset",
+          "Description": "Marks the onset of the visual stimuli. With epochs['stimulus onset'], extract all epochs time locked to the visual stimulus onset"
+        },
+        "Factor2": {
+          "Name": "stimulus offset",
+          "Description": "Marks the offset of the visual stimuli. With epochs['stimulus offset'], extract all epochs time locked to the offset of the visual stimulus"
+        },
+        "Factor3": {
+          "Name": "jitter onset",
+          "Description": "Marks the beginning of the inter-trial jitter. All trials lasted 2 sec., with an added jitter of 400ms on average. With epochs['jitter onset'], extract all epochs time locked to the beginning of the jitter period (2 sec. after stimulus onset)"
+        }
+      },
+      "block": {
+        "description": "marks the experimental blocks",
+        "FactorType": "discrete",
+        "Factor1": {
+          "Name": "block_*",
+          "Description": "Experimental blocks. Our experiment consisted of 5 blocks, inbetween which participants were allowed to take a break. With epochs['block_1'], extract all epochs of the first experimental block"
+        }
+      },
+      "miniblock": {
+        "description": "marks the experimental miniblocks",
+        "FactorType": "discrete",
+        "Factor1": {
+          "Name": "miniblock_*",
+          "Description": "Experimental miniblocks. Each experimental block consisted of 4 miniblocks. At the beginning of each mini block, the two target stimuli were presented to the participant, which the participant had to remember to be able to detect in the stream of stimuli. With epochs['miniblock_1'], extract all epochs of the first experimental miniblock"
+        },
+      "category": {
+        "description": "Category of the visual stimuli",
+        "FactorType": "categorical",
+        "Factor1": {
+          "Name": "face",
+          "Description": "Identifies face trials. With epochs['face'], extract all epochs in which a face was presented"
+        },
+        "Factor2": {
+          "Name": "object",
+          "Description": "Identifies object trials. With epochs['object'], extract all epochs in which a object was presented"
+        },
+        "Factor3": {
+          "Name": "letter",
+          "Description": "Identifies letter trials. With epochs['face'], extract all epochs in which a letter was presented"
+        },
+        "Factor4": {
+          "Name": "false",
+          "Description": "Identifies false font trials (i.e. symbols). With epochs['face'], extract all epochs in which a false font was presented"
+        }
+      },
+      "identity": {
+        "description": "Identity of the identity of visual stimuli. There were 20 identities per category, leading to 80 different identifier. Below, we will describe the syntax for each category separately as factors. Note that this is not exactly accurate, as identity is a factor with 80 different levels.",
+        "FactorType": "categorical",
+        "Factor1": {
+          "Name": "face_*",
+          "Description": "Identifies the identity of face trials. With epochs['face_*'], extract all epochs in which that specific face was presented. From 1-9, leading 0"
+        },
+        "Factor2": {
+          "Name": "object_*",
+          "Description": "Identifies the identity of object trials. With epochs['object_*'], extract all epochs in which that specific face was presented. From 1-9, leading 0"
+        },
+        "Factor3": {
+          "Name": "letter_*",
+          "Description": "Identifies the identity of letter trials. With epochs['letter_*'], extract all epochs in which that specific face was presented. From 1-9, leading 0"
+        },
+        "Factor4": {
+          "Name": "false_*",
+          "Description": "Identifies the identity of false font trials (i.e. symbols). With epochs['false__*'], extract all epochs in which that specific face was presented. From 1-9, leading 0"
+        }
+      },
+      "orientation": {
+        "description": "Orientation of the displayed stimuli.",
+        "FactorType": "categorical",
+        "Factor1": {
+          "Name": "Center",
+          "Description": "Identifies stimuli presented in the center orientation. With epochs['Center'], extract all epochs in which as stimulus was presented in the center orientation."
+        },
+        "Factor2": {
+          "Name": "Left",
+          "Description": "Identifies stimuli presented in the Left orientation. With epochs['Left'], extract all epochs in which as stimulus was presented in the Left orientation."
+        },
+        "Factor3": {
+          "Name": "Right",
+          "Description": "Identifies stimuli presented in the center orientation. With epochs['Right'], extract all epochs in which as stimulus was presented in the Right orientation."
+        }
+      },
+      "duration": {
+        "description": "Duration a visual stimulus was presented for",
+        "FactorType": "categorical",
+        "Factor1": {
+          "Name": "500ms",
+          "Description": "Identifies stimuli presented for 500ms. With epochs['500ms'], extract all epochs in which the stimulus was displayed for 500ms."
+        },
+        "Factor2": {
+          "Name": "1000ms",
+          "Description": "Identifies stimuli presented for 1000ms. With epochs['1000ms'], extract all epochs in which the stimulus was displayed for 1000ms."
+        },
+        "Factor3": {
+          "Name": "1500ms",
+          "Description": "Identifies stimuli presented for 1500ms. With epochs['1500ms'], extract all epochs in which the stimulus was displayed for 1500ms."
+        }
+      },
+      "task_relevance": {
+        "description": "Task relevance of a given trial. In our experiment, two target stimuli were presented at the beginning of each block. The targets were either a face and an object or a letter and a symbol. Note that the task relevance manipulation was orthogonalize with stimulus category and identity, as each identity was presented at least once as a target and that for half of the miniblocks, faces and objects were targets, while for the other half, letter and false fonts were targets.",
+        "FactorType": "categorical",
+        "Factor1": {
+          "Name": "Relevant target",
+          "Description": "Identifies target stimuli. Target stimuli are presented at the beginning of each miniblock and participants must detect them among the sequence of presented stimuli by pressing a button. With epochs['Relevant target'], extract all target trials."
+        },
+        "Factor2": {
+          "Name": "Relevant non-target",
+          "Description": "Identifies task relevant non target stimuli. We considered task relevant stimuli that were of the same category as the target but of a different identity. With epochs['Relevant non-target'], extract all task relevant non target trials."
+        },
+        "Factor3": {
+          "Name": "Irrelevant",
+          "Description": "Identifies task irrelevant non target stimuli. We considered task irrelevant stimuli that were of a different category than the target. With epochs['Irrelevant'], extract all task irrelevant non target trials."
+        }
+      },
+      "response": {
+        "description": "Rated response of the participants.",
+        "FactorType": "categorical",
+        "Factor1": {
+          "Name": "Hit",
+          "Description": "Participants correctly identified a target by pressing a button. With epochs['Hit'], extract all target trials for which the participants pressed a key."
+        },
+        "Factor2": {
+          "Name": "CorrRej",
+          "Description": "Participants correctly rejected a non-target stimulus and did not press any button. With epochs['CorrRej'], extract all non-target trials for which the participants did not press a key."
+        },
+        "Factor3": {
+          "Name": "Miss",
+          "Description": "Participants failed to press a button when a target stimulus was presented. With epochs['Miss'], extract all target trials in which participants failed to press a button."
+        },
+        "Factor4": {
+          "Name": "FA",
+          "Description": "Participants mistakenly pressed a button when a non-target stimulus was presented. With epochs['FA'], extract all non-target trials in which participants pressed a button."
+        },
+        "Factor5": {
+          "Name": "n.a.",
+          "Description": "For the events stimulus offset and jitter onset, the response is set to n.a. as the response relates to the visual stimulus, not to the other events. This should not be used to access the data."
+        }
+      }
+      }
+    }
+  }
+}
