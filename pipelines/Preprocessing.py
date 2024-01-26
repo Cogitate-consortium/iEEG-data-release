@@ -13,14 +13,16 @@ import environment_variables as ev
 
 SUPPORTED_STEPS = [
     "notch_filtering",
-    "automated_bad_channels_rejection",
-    "manual_artifact_detection",
+    "manual_bad_channels_rejection",
+    "description_bad_channels_rejection",
     "car",
     "laplace_reference",
     "hg_computations",
+    "erp_computations",
     "manual_artifact_detection",
     "epoching",
-    "plot_epochs"
+    "atlas_mapping",
+    "plot_channels_loc"
 ]
 
 ERROR_UNKNOWN_STEP_TEXT = "You have given the preprocessing step: {step} in the analysis paramters json file that is " \

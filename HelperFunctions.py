@@ -24,7 +24,7 @@ import pandas as pd
 
 import json
 
-# Set hte MNE debug level:
+# Set the MNE debug level:
 mne.set_log_level(verbose='WARNING')
 
 
@@ -117,45 +117,6 @@ def path_generator(directory):
         os.makedirs(directory)
 
     return directory
-
-
-def create_dig_montage(mne_data, bids_path, montage_space='T1'):
-    """
-    This function adds a dig montage to the mne data, from the space specified. This is required as in our csae, we
-    have both the fsaverage and T1 montages within the BIDS root, which MNE bids doesn't handle
-    :param mne_data: (mne data object, raw, epochs or evoked) object to which the montage should be added
-    :param bids_path: (bids path object from mne_bids) contains paths information
-    :param montage_space: (string) T1 for subject native T1 space, MNI for fsaverage space
-    :return:
-    """
-    # Handle montage type
-    if montage_space.upper() == "T1":
-        space = "Other"
-        coord_frame = "mri"
-    elif montage_space.upper() == "MNI":
-        space = "fsaverage"
-        coord_frame = "mni_tal"
-    else:
-        raise Exception("You have passed a montage space that is not supported. It should be either T1 or"
-                        "MNI! Check your config")
-
-    # Create channels localization file:
-    channels_loc = Path(bids_path.directory,
-                        'sub-{}_ses-{}_space-{}_electrodes.tsv'.format(bids_path.subject, bids_path.session,
-                                                                       space))
-    # Load the file:
-    channels_coordinates = pd.read_csv(channels_loc, sep='\t')
-    # From this file, getting the channels:
-    channels = channels_coordinates["name"].tolist()
-    # Get the position:
-    position = channels_coordinates[["x", "y", "z"]].to_numpy()
-    # Create the montage:
-    montage = mne.channels.make_dig_montage(ch_pos=dict(zip(channels, position)),
-                                            coord_frame=coord_frame)
-    # And set the montage on the raw object:
-    mne_data.set_montage(montage, on_missing='warn')
-
-    return mne_data
 
 
 def save_param(param, save_path, step, signal, file_prefix, file_extension):
@@ -534,69 +495,6 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
         epochs = create_metadata_from_events(epochs, meta_data_column)
 
     return epochs
-
-
-def automated_artifact_detection(epochs, standard_deviation_cutoff=4, trial_proportion_cutoff=0.1, channel_types=None,
-                                 aggregation_function="peak_to_peak"):
-    """
-    This function perform a basic artifact rejection from the each electrode separately
-    and then also removes the trial from all eletrodes if it is considered an outlier
-    for more than X percent of the electrodes. NOTE: THIS FUNCTION DOES NOT DISCARD THE TRIALS THAT ARE DETECTED AS
-    BEING BAD!!!
-    :param epochs: (mne epochs object) epochs for which to reject trials.
-    :param standard_deviation_cutoff: (float or int) number of standard deviation the amplitude of the data  a given
-    trial must be to be considered an outlier
-    :param trial_proportion_cutoff: (int between 0 and 1) proportion of channels for which the given trial must be
-    considered "bad" (as defined by std factor) for a trial to be discarded all together
-    :param channel_types: (dict: "chan_type": True) dictionary containing a boolean for each channel type to select
-    which channels are considered by this step
-    :param aggregation_function: (string) name of the function used to aggregate the data within trials and channels
-    across time. If you set "mean", the mean will be computed within trial and channel. The standard deviation thereof
-    will be used to compute the rejection theshold
-    :return:
-    """
-    # Selecting electrodes of interest:
-    if channel_types is None:
-        channel_types = {"seeg": True, "ecog": True}
-    picks = mne.pick_types(epochs.info, **channel_types)
-
-    if aggregation_function == "peak_to_peak" or aggregation_function == "ptp":
-        spec_func = np.ptp
-    elif aggregation_function == "mean" or aggregation_function == "average":
-        spec_func = np.mean
-    elif aggregation_function == "auc" or aggregation_function == "area_under_the_curve":
-        spec_func = np.trapz
-    else:
-        raise Exception("You have passed a function for aggregation that is not support! The argument "
-                        "\naggregation_function must be one of the following:"
-                        "\npeak_to_peak"
-                        "\nmean"
-                        "\nauc")
-    # ------------------------------------------------------------------------------------------------------------------
-    # Computing thresholds and rejecting trials based on it:
-    # Compute the aggregation (average, ptp, auc...) within trial and channel across time:
-    trial_aggreg = spec_func(epochs.get_data(picks=picks), axis=2)
-    # Computing the standard deviation across trials but still within electrode of the aggregation measure:
-    stdev = np.std(trial_aggreg, axis=0)
-    # Computing the average of the dependent measure across trials within channel:
-    average = np.mean(trial_aggreg, axis=0)
-    # Computing the artifact boundaries (beyond which a trial will be considered artifactual) by taking the mean +- n
-    # times the std of the aggregated meaasure:
-    artifact_thresh = np.array([average - stdev * standard_deviation_cutoff,
-                                average + stdev * standard_deviation_cutoff])
-    print(epochs.ch_names)
-    print(artifact_thresh)
-    # Comparing the values of each trial of a given channel against the threshold of that specific channel. Boolean
-    # outcome:
-    rejection_matrix = \
-        np.array([np.array((trial_aggreg[:, i] > artifact_thresh[1, i]) & (trial_aggreg[:, i] > artifact_thresh[0, i]))
-                  for i in range(trial_aggreg.shape[1])]).astype(float)
-    # trial_proportion_cutoff dictates the proportion of channel for whom trial must be marked as bad to discard that
-    # specific trial across all channels. Averaging the rejection matrix across channels to reject specific trials:
-    ind_trials_to_drop = np.where(
-        np.mean(rejection_matrix, axis=0) > trial_proportion_cutoff)[0]
-
-    return epochs, ind_trials_to_drop
 
 
 def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types=None,
@@ -1261,31 +1159,6 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
     return raw, reference_mapping, bad_channels
 
 
-def remove_channel_tsv_description(channel_tsv_df, description):
-    """
-    This function removes a specific description from a bids channel tsv file. This is useful if previous iterations
-    added wrong annotation to the channels tsv
-    :param channel_tsv_df: (df) mne bids channel tsv pandas data frame
-    :param description: (string) description to remove
-    :return:
-    """
-    # Find all the channels for which the current description is found
-    desc_channels = channel_tsv_df.loc[channel_tsv_df["status_description"].str.contains(description, na=False),
-    "name"].to_list()
-    for channel in desc_channels:
-        # Get the description string of the current channel:
-        ch_desc = channel_tsv_df.loc[channel_tsv_df["name"] == channel, "status_description"].item().split("/")
-        # Remove the current description:
-        ch_desc.remove(description)
-        # Add the cleaned string back in:
-        channel_tsv_df.loc[channel_tsv_df["name"] == channel, "status_description"] = "/".join(ch_desc)
-
-    return channel_tsv_df
-
-
-from mne.baseline import rescale
-
-
 def baseline_scaling(epochs, correction_method="ratio", baseline=(None, 0), picks=None, n_jobs=1):
     """
     This function performs baseline correction on the data. The default is to compute the mean over the entire baseline
@@ -1313,6 +1186,7 @@ def baseline_scaling(epochs, correction_method="ratio", baseline=(None, 0), pick
     :param n_jobs: (int) number of jobs to use to preprocessing the function. Can be ran in parallel
     :return: none, the data are modified in place
     """
+    from mne.baseline import rescale
     epochs.apply_function(rescale, times=epochs.times, baseline=baseline, mode=correction_method,
                           picks=picks, n_jobs=n_jobs, )
 
