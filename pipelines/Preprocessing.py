@@ -359,7 +359,8 @@ def preprocessing(param, subjects):
                             plot_channels_psd(raw[signal],
                                               save_root, step,
                                               signal, file_prefix, plot_single_channels=param["plot_single_channels"],
-                                              channels_type=step_parameters[signal]["channel_types"])
+                                              channels_type=step_parameters[signal]["computation_parameters"][
+                                                  "channel_types"])
                 elif 'raw' not in locals():
                     raise Exception(ERROR_RAW_MISSING.format(step=step))
                 elif signal not in raw:
