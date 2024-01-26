@@ -161,7 +161,7 @@ def mne_data_saver(data, param, save_root, step, signal, file_prefix,
     :param file_extension: (string) file name extension
     :return:
     """
-    print("=" * 40)
+    print("-" * 40)
     print("Saving mne object")
 
     # First, generating the root path to save the data:
@@ -1148,7 +1148,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
 
     if relocate_edges:
         # Adding the montage back:
-        raw.set_montage(montage, on_missing="ignore", verbose="WARNING")
+        raw.set_montage(montage, on_missing="ignore", verbose="ERROR")
 
     # Projecting the ecog channels to the surface if they were relocated:
     if relocate_edges:
