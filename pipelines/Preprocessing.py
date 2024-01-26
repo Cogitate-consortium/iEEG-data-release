@@ -20,7 +20,6 @@ SUPPORTED_STEPS = [
     "hg_computations",
     "manual_artifact_detection",
     "epoching",
-    "automated_artifact_detection",
     "plot_epochs"
 ]
 
@@ -126,7 +125,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             if step.lower() == "notch_filtering":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 # Looping through the different signals that are requested to be filtered:
@@ -158,7 +157,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             if step.lower() == "manual_bad_channels_rejection":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 # Looping through the different signals that are requested to be filtered:
@@ -188,7 +187,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "description_bad_channels_rejection":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 for ind, signal in enumerate(list(step_parameters.keys())):
@@ -220,7 +219,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "car":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 # Looping through the signals we want to perform the CAR on:
@@ -250,7 +249,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "laplace_reference":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Looping through the signals we want to perform the laplace reference on:
                 step_parameters = param[step]
                 for ind, signal in enumerate(list(step_parameters.keys())):
@@ -300,7 +299,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "hg_computations":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Looping through the signals we want to perform the laplace reference on:
                 step_parameters = param[step]
                 if 'raw' in locals():
@@ -336,7 +335,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "erp_computations":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 if 'raw' in locals():
@@ -370,7 +369,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "epoching":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 # The epochs will be stored in a dictionary. Needs to be created first:
@@ -406,7 +405,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "atlas_mapping":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 # First, relocating the free surfer directory:
@@ -481,7 +480,7 @@ def preprocessing(param, subjects):
             # ----------------------------------------------------------------------------------------------------------
             elif step.lower() == "plot_channels_loc":
                 print("-" * 60)
-                print("Performing " + step)
+                print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
                 # First, relocating the free surfer directory:
