@@ -96,7 +96,7 @@ def preprocessing(param, subjects):
 
         # Loading the data under the term broadband, as it is what they are as long as no further
         # filtering was employed
-        raw = {"broadband": read_raw_bids(bids_path=bids_path)}
+        raw = {"broadband": read_raw_bids(bids_path=bids_path, verbose="ERROR")}
 
         # Load the data in memory:
         raw["broadband"].load_data()
@@ -517,5 +517,5 @@ def preprocessing(param, subjects):
 
 if __name__ == "__main__":
     config_file = r"preprocessing_config-default.json"
-    subjects_list = ["CE103"]
+    subjects_list = ["CF102"]
     preprocessing(config_file, subjects_list)
