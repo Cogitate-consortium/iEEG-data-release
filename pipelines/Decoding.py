@@ -58,7 +58,7 @@ def decoding(config, subjects):
         # ======================================================================================================
         # Load and prepare the data:
         # Set path to the data:
-        epochs_file = Path(ev.bids_root, 'derivatives', '../preprocessing',
+        epochs_file = Path(ev.bids_root, 'derivatives', 'preprocessing',
                            'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                            "epoching", param["signal"],
                            "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
