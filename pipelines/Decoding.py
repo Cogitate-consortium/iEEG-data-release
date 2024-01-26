@@ -15,13 +15,14 @@ from HelperFunctions import baseline_scaling
 import environment_variables as ev
 
 
-def decoding(config, subjects):
+def decoding(param, subjects):
     print("-" * 40)
     print("Welcome to Decoding!")
     print("The onset responsive channels of the following subjects will be determined: ")
     print(subjects)
-    print("Using the config file:")
-    print(config)
+    if not isinstance(param, dict):
+        print("Using the config file:")
+        print(param)
     if isinstance(subjects, str):
         subjects = [subjects]
 
@@ -31,12 +32,13 @@ def decoding(config, subjects):
     # Looping through each subject:
     for subject in subjects:
         print("-" * 40)
-        print("Decoding {} with config file {}".format(subject, config))
+        print("Decoding {}".format(subject))
 
         # ======================================================================================================
         # Load the config and prepare directories:
-        with open(config) as f:
-            param = json.load(f)
+        if not isinstance(param, dict):
+            with open(param) as f:
+                param = json.load(f)
 
         # Create path to save the data:
         save_root_results = Path(ev.bids_root, 'derivatives', 'decoding',
@@ -106,7 +108,7 @@ def decoding(config, subjects):
             print("Decoding {} with {} folds stratified cross validation:".format(param["decoding_target"],
                                                                                   param["n_folds"]))
             # Extract the data:
-            data = epochs.get_data()
+            data = epochs.get_data(copy=True)
             # Get the classes:
             y = epochs.metadata[param["decoding_target"]].values
             # Run the decoding:
@@ -117,7 +119,7 @@ def decoding(config, subjects):
                                                                               param["test_group"]))
             # Extract the training data:
             train_epochs = epochs[param["train_condition"]].get_data()
-            x_train = train_epochs.get_data()
+            x_train = train_epochs.get_data(copy=True)
             y_train = train_epochs.metadata[param["decoding_target"]].values
             # Train the classifier:
             time_gen.fit(X=x_train, y=y_train)
@@ -146,9 +148,9 @@ def decoding(config, subjects):
             ax.set_title("Decoding of {}".format(param["decoding_target"]))
         else:
             ax.set_title("Decoding of {}, \nTrain condition: {}, Test "
-                          "condition: {}".format(param["decoding_target"],
-                                                 param["train_condition"],
-                                                 param["test_condition"]))
+                         "condition: {}".format(param["decoding_target"],
+                                                param["train_condition"],
+                                                param["test_condition"]))
         ax.axvline(0, color='k')
         ax.axhline(0, color='k')
         fig.colorbar(im, fraction=0.046, pad=0.04)
@@ -192,6 +194,6 @@ def decoding(config, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"decoding_config-default.json"
+    config_file = r"Decoding_config-default.json"
     subjects_list = ["SF102"]
     decoding(config_file, subjects_list)

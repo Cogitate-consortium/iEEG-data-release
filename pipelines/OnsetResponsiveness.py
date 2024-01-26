@@ -14,14 +14,15 @@ from HelperFunctions import baseline_scaling
 import environment_variables as ev
 
 
-def onset_responsiveness(config, subjects,
+def onset_responsiveness(param, subjects,
                          plot_single_channels=True, plot_only_responsive=True):
-    print("-" * 40)
+    print("=" * 80)
     print("Welcome to Onset Responsiveness!")
     print("The onset responsive channels of the following subjects will be determined: ")
     print(subjects)
-    print("Using the config file:")
-    print(config)
+    if not isinstance(param, dict):
+        print("Using the config file:")
+        print(param)
     print("If you have the plotting options on, it will take some time!")
     if isinstance(subjects, str):
         subjects = [subjects]
@@ -31,13 +32,14 @@ def onset_responsiveness(config, subjects,
     # ======================================================================================================
     # Looping through each subject:
     for subject in subjects:
-        print("-" * 40)
-        print("Onset responsiveness {} with config file {}".format(subject, config))
+        print("=" * 60)
+        print("Onset responsiveness {}".format(subject))
 
         # ======================================================================================================
         # Load the config and prepare directories:
-        with open(config) as f:
-            param = json.load(f)
+        if not isinstance(param, dict):
+            with open(param) as f:
+                param = json.load(f)
 
         # Create path to save the data:
         save_root_results = Path(ev.bids_root, 'derivatives', 'onset_responsiveness',
@@ -202,7 +204,7 @@ def onset_responsiveness(config, subjects,
 
 
 if __name__ == "__main__":
-    config_file = r"onset_responsiveness_config-default.json"
+    config_file = r"Onset_responsiveness_config-default.json"
     subjects_list = ["CF102"]  # ["SF124", "SF125", "SF126"]
     onset_responsiveness(config_file, subjects_list,
                          plot_single_channels=True, plot_only_responsive=True)
