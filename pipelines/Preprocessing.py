@@ -386,13 +386,6 @@ def preprocessing(param, subjects):
                         if param["save_intermediary_steps"]:
                             mne_data_saver(epochs[signal], param, save_root, step, signal, file_prefix,
                                            file_extension="-epo.fif")
-                        if param["check_plots"]:
-                            print("-" * 40)
-                            print("Plotting the channels power spectral density after epoching")
-                            plot_channels_psd(epochs[signal],
-                                              save_root, step,
-                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
-                                              channels_type=step_parameters[signal]["channel_types"])
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -526,4 +519,3 @@ if __name__ == "__main__":
     config_file = r"preprocessing_config-default.json"
     subjects_list = ["CE103"]
     preprocessing(config_file, subjects_list)
-
