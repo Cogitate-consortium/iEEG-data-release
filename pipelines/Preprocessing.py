@@ -1,11 +1,10 @@
 import json
-import numpy as np
 import mne
 import os
 
 from pathlib import Path
 from mne_bids import BIDSPath, read_raw_bids
-from HelperFunctions import (notch_filtering, \
+from HelperFunctions import (notch_filtering,
                              mne_data_saver, plot_channels_psd, description_ch_rejection,
                              plot_bad_channels, custom_car, laplacian_referencing,
                              detrend_runs, compute_hg, compute_erp, epoching, roi_mapping,
@@ -42,13 +41,23 @@ ERROR_SIGNAL_MISSING = "For the preprocessing step {step}, you have passed the s
                        "\ngenerated. Make sure to check your config file"
 
 
-def preprocessing(config, subjects, verbose=False):
+def preprocessing(param, subjects):
+    """
+    This function applies a preprocessing pipeline to the iEEG data of the subjects passed in the list subjects list.
+    The preprocessing pipeline is conducted according to the parameters passed in param. The param can either be a
+    json file containing the preprocessing parameters or by passing directly a dictionary.
+    :param param: (path-like or dictionary) contains the parameters for the preprocessing pipeline
+    :param subjects: (list of strings) list of the subjects on which to apply the specified preprocessing pipeline.
+    return:
+        - None: the output of the preprocessing pipelines are saved under $bids_root/derivatives/preprocessing
+    """
     print("-" * 40)
     print("Welcome to preprocessing!")
     print("The following subjects will now be preprocessed: ")
     print(subjects)
-    print("Using the config file:")
-    print(config)
+    if not isinstance(param, dict):
+        print("Using the config file:")
+        print(param)
     print("It may take some time, count roughly 5-10min per subject!")
     if isinstance(subjects, str):
         subjects = [subjects]
@@ -57,12 +66,13 @@ def preprocessing(config, subjects, verbose=False):
     # Looping through each subject:
     for subject in subjects:
         print("-" * 40)
-        print("Preprocessing {} with config file {}".format(subject, config))
+        print("Preprocessing {}".format(subject))
 
         # ======================================================================================================
         # Load the config:
-        with open(config) as f:
-            param = json.load(f)
+        if not isinstance(param, dict):
+            with open(param) as f:
+                param = json.load(f)
 
         # Create path to save the data:
         save_root = Path(ev.bids_root, 'derivatives', 'preprocessing',
@@ -85,14 +95,14 @@ def preprocessing(config, subjects, verbose=False):
 
         # Loading the data under the term broadband, as it is what they are as long as no further
         # filtering was employed
-        raw = {"broadband": read_raw_bids(bids_path=bids_path, verbose=verbose)}
+        raw = {"broadband": read_raw_bids(bids_path=bids_path)}
 
         # Load the data in memory:
         raw["broadband"].load_data()
         # Downsampling the signal, otherwise things take forever:
         if param['downsample_rate'] is not None:
             print("Downsampling the signal to {}Hz, this may take a little while".format(param['downsample_rate']))
-            raw["broadband"].resample(param['downsample_rate'], n_jobs=param["njobs"], verbose=verbose)
+            raw["broadband"].resample(param['downsample_rate'], n_jobs=param["njobs"], verbose='WARNING')
         print(raw["broadband"].info)
 
         # Detrending the data:
@@ -102,7 +112,7 @@ def preprocessing(config, subjects, verbose=False):
         # Create the events in the signal from the annotation for later use:
         print('Creating annotations')
         events_from_annot, event_dict = mne.events_from_annotations(
-            raw["broadband"], verbose=verbose)
+            raw["broadband"], verbose='WARNING')
         # And then deleting the annotations, not needed anymore. Makes interactive plotting stuff more reactive:
         raw["broadband"].set_annotations(mne.Annotations(onset=[], duration=[], description=[]))
 
@@ -124,21 +134,19 @@ def preprocessing(config, subjects, verbose=False):
                     if 'raw' in locals() and signal in raw:
                         # Filtering the signal:
                         raw[signal] = notch_filtering(raw[signal],
-                                                      njobs=param["njobs"], verbose=verbose,
+                                                      njobs=param["njobs"],
                                                       **step_parameters[signal])
                         # Saving the data:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(raw[signal], param, save_root, step, signal, file_prefix,
-                                           file_extension="-raw.fif", verbose=verbose)
+                                           file_extension="-raw.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the channels power spectral density after notch filtering")
-                            plot_channels_psd(raw[signal], param,
+                            plot_channels_psd(raw[signal],
                                               save_root, step,
-                                              signal, file_prefix,
-                                              file_extension="-psd.png", plot_single_channels=False,
-                                              channels_type=step_parameters[signal]["channel_types"],
-                                              verbose=verbose)
+                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
+                                              channels_type=step_parameters[signal]["channel_types"])
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -161,16 +169,14 @@ def preprocessing(config, subjects, verbose=False):
                         # Saving the data:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(raw[signal], param, save_root, step, signal, file_prefix,
-                                           file_extension="-raw.fif", verbose=verbose)
+                                           file_extension="-raw.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the channels power spectral density after notch filtering")
-                            plot_channels_psd(raw[signal], param,
+                            plot_channels_psd(raw[signal],
                                               save_root, step,
-                                              signal, file_prefix,
-                                              file_extension="-psd.png", plot_single_channels=False,
-                                              channels_type=step_parameters[signal]["channel_types"],
-                                              verbose=verbose)
+                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
+                                              channels_type=step_parameters[signal]["channel_types"])
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -195,14 +201,14 @@ def preprocessing(config, subjects, verbose=False):
                         # Saving the data:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(raw[signal], param, save_root, step,  signal, file_prefix,
-                                           file_extension="-raw.fif",
-                                           verbose=verbose)
+                                           file_extension="-raw.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the bad channels after notch description_bad_channels_rejection")
-                            plot_bad_channels(raw[signal], param, save_root, step, signal, file_prefix,
-                                              file_extension="-bads.png", plot_single_channels=False,
-                                              picks="bads", verbose=verbose)
+                            plot_bad_channels(raw[signal], save_root, step, signal, file_prefix,
+                                              file_extension="-bads.png",
+                                              plot_single_channels=param["plot_single_channels"],
+                                              picks="bads")
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -225,17 +231,14 @@ def preprocessing(config, subjects, verbose=False):
                         # Saving the data:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(raw[signal], param, save_root, step,  signal, file_prefix,
-                                           file_extension="-raw.fif",
-                                           verbose=verbose)
+                                           file_extension="-raw.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the channels power spectral density after common average referencing")
-                            plot_channels_psd(raw[signal], param,
+                            plot_channels_psd(raw[signal],
                                               save_root, step,
-                                              signal, file_prefix,
-                                              file_extension="-psd.png", plot_single_channels=False,
-                                              channels_type=step_parameters[signal]["channel_types"],
-                                              verbose=verbose)
+                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
+                                              channels_type=step_parameters[signal]["channel_types"])
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -271,7 +274,6 @@ def preprocessing(config, subjects, verbose=False):
                         # Performing the laplace referencing:
                         raw[signal], reference_mapping, bad_channels = \
                             laplacian_referencing(raw[signal], laplacian_mapping,
-                                                  verbose=verbose,
                                                   subjects_dir=ev.fs_directory,
                                                   subject="sub-" + subject,
                                                   montage_space=param["montage_space"],
@@ -279,17 +281,14 @@ def preprocessing(config, subjects, verbose=False):
                         # Saving the data:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(raw[signal], param, save_root, step,  signal, file_prefix,
-                                           file_extension="-raw.fif",
-                                           verbose=verbose)
+                                           file_extension="-raw.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the channels power spectral density after laplace referencing")
-                            plot_channels_psd(raw[signal], param,
+                            plot_channels_psd(raw[signal],
                                               save_root, step,
-                                              signal, file_prefix,
-                                              file_extension="-psd.png", plot_single_channels=False,
-                                              channels_type=step_parameters[signal]["channel_types"],
-                                              verbose=verbose)
+                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
+                                              channels_type=step_parameters[signal]["channel_types"])
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -312,24 +311,20 @@ def preprocessing(config, subjects, verbose=False):
                         # Compute the signal accordingly:
                         raw[signal] = compute_hg(
                             raw[frequency_band_parameters["source_signal"]],
-                            verbose=verbose,
                             njobs=param["njobs"],
                             **frequency_band_parameters["computation_parameters"])
                         # Plotting the psd:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(raw[signal], param, save_root, step, signal, file_prefix,
-                                           file_extension="-raw.fif",
-                                           verbose=verbose)
+                                           file_extension="-raw.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the channels power spectral density after high gamma computations")
-                            plot_channels_psd(raw[signal], param,
+                            plot_channels_psd(raw[signal],
                                               save_root, step,
-                                              signal, file_prefix,
-                                              file_extension="-psd.png", plot_single_channels=False,
+                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
                                               channels_type=step_parameters[signal]["computation_parameters"][
-                                                  "channel_types"],
-                                              verbose=verbose)
+                                                  "channel_types"])
                 elif 'raw' not in locals():
                     raise Exception(ERROR_RAW_MISSING.format(step=step))
                 elif signal not in raw:
@@ -350,24 +345,20 @@ def preprocessing(config, subjects, verbose=False):
                         # Compute the high gamma:
                         raw[signal] = \
                             compute_erp(raw[step_parameters[signal]["source_signal"]],
-                                        verbose=verbose,
                                         njobs=param["njobs"],
                                         **step_parameters[signal]["computation_parameters"])
 
                         # Plotting the psd:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(raw[signal], param, save_root, step, signal, file_prefix,
-                                           file_extension="-raw.fif",
-                                           verbose=verbose)
+                                           file_extension="-raw.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the channels power spectral density after filtering")
-                            plot_channels_psd(raw[signal], param,
+                            plot_channels_psd(raw[signal],
                                               save_root, step,
-                                              signal, file_prefix,
-                                              file_extension="-psd.png", plot_single_channels=False,
-                                              channels_type=step_parameters[signal]["channel_types"],
-                                              verbose=verbose)
+                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
+                                              channels_type=step_parameters[signal]["channel_types"])
                 elif 'raw' not in locals():
                     raise Exception(ERROR_RAW_MISSING.format(step=step))
                 elif signal not in raw:
@@ -392,17 +383,14 @@ def preprocessing(config, subjects, verbose=False):
                         # Saving the data:
                         if param["save_intermediary_steps"]:
                             mne_data_saver(epochs[signal], param, save_root, step, signal, file_prefix,
-                                           file_extension="-epo.fif",
-                                           verbose=verbose)
+                                           file_extension="-epo.fif")
                         if param["check_plots"]:
                             print("-" * 40)
                             print("Plotting the channels power spectral density after epoching")
-                            plot_channels_psd(epochs[signal], param,
+                            plot_channels_psd(epochs[signal],
                                               save_root, step,
-                                              signal, file_prefix,
-                                              file_extension="-psd.png", plot_single_channels=False,
-                                              channels_type=step_parameters[signal]["channel_types"],
-                                              verbose=verbose)
+                                              signal, file_prefix, plot_single_channels=param["plot_single_channels"],
+                                              channels_type=step_parameters[signal]["channel_types"])
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -449,7 +437,7 @@ def preprocessing(config, subjects, verbose=False):
                                 if ch_roi.split("/")[0].lower() == "unknown":
                                     bad_channels.append(channel)
                         if step_parameters[signal]["remove_channels_unknown"]:
-                            print("WARNING: The following channels were found to sit outside the brain and will be set "
+                            print("The following channels were found to sit outside the brain and will be set "
                                   "to bad!")
                             print(bad_channels)
                             # Set these channels as bad:
@@ -459,7 +447,7 @@ def preprocessing(config, subjects, verbose=False):
                         # Doing the probabilistic mapping onto the different atlases:
                         # Extract the anatomical labels:
                         electrodes_mapping_df = roi_mapping(epochs["broadband"], step_parameters["list_parcellations"],
-                                                            "sub-" + subject, ev.fs_directory, config, save_root, step,
+                                                            "sub-" + subject, ev.fs_directory, param, save_root, step,
                                                             signal, file_prefix, file_extension='mapping.csv')
 
                         # Get a list of the channels that are outside the brain:
@@ -474,7 +462,7 @@ def preprocessing(config, subjects, verbose=False):
                                 if ch_roi.split("/")[0].lower() == "unknown":
                                     bad_channels.append(channel)
                         if step_parameters["remove_channels_unknown"]:
-                            print("WARNING: The following channels were found to sit outside the brain and will be set "
+                            print("The following channels were found to sit outside the brain and will be set "
                                   "to bad!")
                             print(bad_channels)
                             # Set these channels as bad:
@@ -535,6 +523,5 @@ def preprocessing(config, subjects, verbose=False):
 if __name__ == "__main__":
     config_file = r"preprocessing_config-default.json"
     subjects_list = ["CE103"]
-    preprocessing(config_file, subjects_list,
-                  verbose='CRITICAL')
+    preprocessing(config_file, subjects_list)
 
