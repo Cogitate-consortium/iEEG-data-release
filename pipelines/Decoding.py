@@ -16,7 +16,7 @@ import environment_variables as ev
 
 
 def decoding(param, subjects):
-    print("-" * 40)
+    print("=" * 80)
     print("Welcome to Decoding!")
     print("The onset responsive channels of the following subjects will be determined: ")
     print(subjects)
@@ -31,7 +31,7 @@ def decoding(param, subjects):
     # ======================================================================================================
     # Looping through each subject:
     for subject in subjects:
-        print("-" * 40)
+        print("=" * 60)
         print("Decoding {}".format(subject))
 
         # ======================================================================================================
