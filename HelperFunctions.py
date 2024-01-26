@@ -24,14 +24,16 @@ import pandas as pd
 
 import json
 
+# Set hte MNE debug level:
+mne.set_log_level(verbose='WARNING')
 
-def detrend_runs(raw, njobs=1, verbose='ERROR'):
+
+def detrend_runs(raw, njobs=1):
     """
     This function detrends the run. If the raw initially consisted of several files that were concatenated, the
     deterending will be performed separately for each run. Otherwise, it will done in one go.
     :param raw: (mne raw object)
     :param njobs: (int)
-    :param verbose: (int)
     """
     # Check whether there are any annotations marking the merging:
     if len(np.where(raw.annotations.description == "BAD boundary")[0]) > 0:
@@ -46,7 +48,7 @@ def detrend_runs(raw, njobs=1, verbose='ERROR'):
                 # Apply detrending:
                 r.apply_function(lambda ch: ch - np.mean(ch),
                                  n_jobs=njobs,
-                                 channel_wise=True, verbose=verbose)
+                                 channel_wise=True)
                 # Append to the rest:
                 raws_list.append(r)
             elif i == boundaries_ts.shape[0]:
@@ -55,7 +57,7 @@ def detrend_runs(raw, njobs=1, verbose='ERROR'):
                 # Apply detrending:
                 r.apply_function(lambda ch: ch - np.mean(ch),
                                  n_jobs=njobs,
-                                 channel_wise=True, verbose=verbose)
+                                 channel_wise=True)
                 # Append to the rest:
                 raws_list.append(r)
             else:
@@ -64,7 +66,7 @@ def detrend_runs(raw, njobs=1, verbose='ERROR'):
                 # Apply detrending:
                 r.apply_function(lambda ch: ch - np.mean(ch),
                                  n_jobs=njobs,
-                                 channel_wise=True, verbose=verbose)
+                                 channel_wise=True)
                 # Append to the rest:
                 raws_list.append(r)
 
@@ -77,7 +79,7 @@ def detrend_runs(raw, njobs=1, verbose='ERROR'):
         raw_detrend = raw.copy()
         raw_detrend.apply_function(lambda ch: ch - np.mean(ch),
                                    n_jobs=njobs,
-                                   channel_wise=True, verbose=verbose)
+                                   channel_wise=True)
 
     return raw_detrend
 
@@ -156,11 +158,11 @@ def create_dig_montage(mne_data, bids_path, montage_space='T1'):
     return mne_data
 
 
-def save_config(config, save_path, step, signal, file_prefix, file_extension):
+def save_param(param, save_path, step, signal, file_prefix, file_extension):
     """
     This function saves the configs that was used to generate the data. It saves both the entire config file and the one
     specific to the particular step
-    :param config: (dictionary) copy of the parameters used to generate the data. Always saving
+    :param param: (dictionary) copy of the parameters used to generate the data. Always saving
     it alongside the data to always know what happened to them
     :param save_path: (path string of path object) path to where the data should be saved
     :param step: (string) name of the preprocessing step, saving the data in a separate folder
@@ -173,22 +175,22 @@ def save_config(config, save_path, step, signal, file_prefix, file_extension):
     config_file_name = Path(save_path, '{}_desc-{}_ieeg{}.json'.format(file_prefix, step,
                                                                        file_extension.split('.')[0]))
     with open(str(config_file_name), 'w') as outfile:
-        json.dump(config[step][signal], outfile)
+        json.dump(param[step][signal], outfile)
     # Saving the entire config file as well:
     config_file_name = Path(save_path, '{}_desc-{}_ieeg{}.json'.format(file_prefix, 'all',
                                                                        file_extension.split('.')[0]))
     with open(str(config_file_name), 'w') as outfile:
-        json.dump(config, outfile)
+        json.dump(param, outfile)
 
     return None
 
 
-def mne_data_saver(data, config, save_root, step, signal, file_prefix,
-                   file_extension="-raw.fif", verbose=True):
+def mne_data_saver(data, param, save_root, step, signal, file_prefix,
+                   file_extension="-raw.fif"):
     """
     This function saves the different instances of mne objects
     :param data: (mne object: epochs, evoked, raw...) data to be saved
-    :param config: (dictionary) copy of the parameters used to generate the data. Always saving
+    :param param: (dictionary) copy of the parameters used to generate the data. Always saving
     it alongside the data to always know what happened to them
     :param save_root: (path string of path object) path to where the data should be saved
     :param step: (string) name of the preprocessing step, saving the data in a separate folder
@@ -196,7 +198,6 @@ def mne_data_saver(data, config, save_root, step, signal, file_prefix,
     :param file_prefix: (string) prefix of the file to save. We follow the convention to have
     the subject ID, the session and the task.
     :param file_extension: (string) file name extension
-    :param verbose: (bool) verbose level for MNE functions
     :return:
     """
     print("=" * 40)
@@ -208,15 +209,15 @@ def mne_data_saver(data, config, save_root, step, signal, file_prefix,
     # Generating the full file name:
     full_file_name = Path(save_path, '{}_desc-{}_ieeg{}'.format(file_prefix, step, file_extension))
     # Saving the data:
-    data.save(full_file_name, overwrite=True, verbose=verbose)
+    data.save(full_file_name, overwrite=True)
     # Saving the config:
-    save_config(config, save_path, step, signal, file_prefix, file_extension.split('.')[0])
+    save_param(param, save_path, step, signal, file_prefix, file_extension.split('.')[0])
 
     return None
 
 
 def plot_channels_psd(raw, save_root, step, signal, file_prefix,
-                      file_extension="psd.png", plot_single_channels=False, channels_type=None, verbose=True):
+                      file_extension="-psd.png", plot_single_channels=False, channels_type=None):
     """
     This function plots and saved the psd of the chosen electrodes. There is also the option to plot each channel
     separately
@@ -230,7 +231,6 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
     :param plot_single_channels: (boolean) whether to plot single channels or only all of
     them superimposed
     :param channels_type: (dict) list of the channels of interest
-    :param verbose: (bool) verbose level for MNE functions
     :return:
     """
     # Getting  the relevant channels:
@@ -246,7 +246,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
 
     # ==========================================================
     # Plotting the psd from all the channels:
-    raw.plot_psd(picks=picks, show=False, verbose=verbose)
+    raw.plot_psd(picks=picks, show=False)
     # Saving the figure:
     plt.savefig(full_file_name, dpi=300, transparent=True)
     plt.close()
@@ -254,17 +254,8 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
     # ==========================================================
     # For all channels separately:
     if plot_single_channels:
-        # Compute the PSD for all the picks:
-        psd, freqs = mne.time_frequency.psd_welch(raw, picks=picks, average="mean", verbose=verbose)
-        for ind, pick in enumerate(picks):
-            fig, ax = plt.subplots(figsize=[15, 6])
-            ax.plot(freqs, np.log(psd[np.arange(psd.shape[0]) != ind, :].T), linewidth=0.5, color="k", alpha=0.8)
-            ax.plot(freqs, np.log(psd[ind, :].T).T, linewidth=2, color="r")
-            ax.set_ylabel("\u03BCV\u00B2/Hz (dB)")
-            ax.set_xlabel("Frequency (Hz)")
-            ax.set_xlim([freqs[0], freqs[-1]])
-            ax.grid(linestyle=":")
-            ax.set_title("{} PSD".format(raw.ch_names[pick]))
+        for pick in picks:
+            raw.plot_psd(picks=[pick], show=False)
             full_file_name = Path(save_path, '{}_desc-{}_ieeg-{}{}'.format(file_prefix, step,
                                                                            raw.ch_names[pick], file_extension))
             plt.savefig(full_file_name, dpi=300, transparent=True)
@@ -274,7 +265,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
 
 
 def plot_bad_channels(raw, save_root, step, signal, file_prefix,
-                      file_extension="bads.png", plot_single_channels=False, picks="bads", verbose=True):
+                      file_extension="bads.png", plot_single_channels=False, picks="bads"):
     """
     This function plots the bad channels psd and raw signal to show what it being disarded:
     :param raw: (mne raw object)
@@ -286,7 +277,6 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
     :param file_extension: (string) file name extension
     :param plot_single_channels: (boolean) whether or not to plot single channels or only all of them superimposed
     :param picks: (list) list of the channels of interest
-    :param verbose: (bool) mne verbose level
     :return:
     """
     # Handling picks input:
@@ -307,8 +297,8 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
         # Plotting the average of the good channels with standard error for reference. Downsampling, otherwise too many
         # data points:
         good_channels_data, times = \
-            raw.copy().resample(100, verbose=verbose).get_data(picks=mne.pick_types(
-                raw.info, ecog=True, seeg=True, verbose=verbose), return_times=True)
+            raw.copy().resample(100).get_data(picks=mne.pick_types(
+                raw.info, ecog=True, seeg=True), return_times=True)
         mean_good_data = np.mean(good_channels_data.T, axis=1)
         ste_good_data = np.std(good_channels_data.T, axis=1) / \
                         np.sqrt(good_channels_data.T.shape[1])
@@ -390,13 +380,12 @@ def custom_car(raw, reference_channel_types=None, target_channel_types=None):
     return raw
 
 
-def notch_filtering(raw, njobs=1, verbose=True, frequency=60, remove_harmonics=True, filter_type="fir",
+def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_type="fir",
                     cutoff_lowpass_bw=None, cutoff_highpass_bw=None, channel_types=None):
     """
     This function filters the raw data according to the set parameters
     :param raw: (mne raw object) continuous data
     :param njobs: (int) number of jobs to preprocessing the filtering in parallel threads
-    :param verbose: (bool) verbose level for MNE
     :param frequency: (int or float) frequency to notch out.
     :param remove_harmonics: (boolean) whether or not to remove all the harmonics of the declared freq (up until the
     sampling freq)
@@ -421,7 +410,7 @@ def notch_filtering(raw, njobs=1, verbose=True, frequency=60, remove_harmonics=T
     if filter_type.lower() == "fir":
         # Applying FIR if FIR in parameters
         raw.notch_filter(frequency, filter_length='auto',
-                         phase='zero', n_jobs=njobs, picks=picks, verbose=verbose)  # Default method is FIR
+                         phase='zero', n_jobs=njobs, picks=picks)  # Default method is FIR
     elif filter_type.lower() == "butterworth_4o":  # Applying butterworth 4th order
         # For the iir methods, mne notch_filter does not support to pass several frequencies at the same time.
         # It also does not support having customized cutoff frequencies.
@@ -431,9 +420,9 @@ def notch_filtering(raw, njobs=1, verbose=True, frequency=60, remove_harmonics=T
         # bandpass filter (notch_cutoff_hp Hz - notch_cutoff_lp Hz)
         if cutoff_lowpass_bw != 0:
             raw.filter(cutoff_lowpass_bw, cutoff_highpass_bw,
-                       phase='zero', method='iir', n_jobs=njobs, picks=picks, verbose=verbose)
+                       phase='zero', method='iir', n_jobs=njobs, picks=picks)
         else:
-            raw.notch_filter(frequency, method='iir', n_jobs=njobs, verbose=verbose)
+            raw.notch_filter(frequency, method='iir', n_jobs=njobs)
         # If there are harmonics to filter out as well:
         if remove_harmonics:
             # Now drop the first frequency from the frequencies:
@@ -441,7 +430,7 @@ def notch_filtering(raw, njobs=1, verbose=True, frequency=60, remove_harmonics=T
             # 2. call the notch_filter function for each of the harmonics to perform the filtering of the harmonics.
             # Note that we here use the standard bandwidth freq/200.
             for freq in frequencies:
-                raw.notch_filter(freq, method='iir', n_jobs=njobs, picks=picks, verbose=verbose)
+                raw.notch_filter(freq, method='iir', n_jobs=njobs, picks=picks)
 
     return raw
 
@@ -488,7 +477,7 @@ def create_metadata_from_events(epochs, metadata_column_names):
 
 
 def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_not_to_epoch=None,
-             baseline=(None, 0.0), reject_by_annotation=True, meta_data_column=None, verbose=True):
+             baseline=(None, 0.0), reject_by_annotation=True, meta_data_column=None):
     """
     This function performs the epoching according to a few parameters
     :param raw: (mne raw object) data to epochs
@@ -514,7 +503,6 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
     The list you pass is the name of the different columns. So you would pass: ["category", "duration", "position"]:
     category  | duration  | position
     Face         short        left
-    :param verbose: (bool) verbose level for MNE
     :return:
     """
     if picks == "all":
@@ -536,10 +524,10 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
     # epoching. Since we are passing a dictionary we can also use the provided keys to acces
     # the events later
     epochs = mne.Epochs(raw, events=events, event_id=events_of_interest, tmin=tmin,
-                        tmax=tmax, baseline=baseline, verbose=verbose, picks=picks,
+                        tmax=tmax, baseline=baseline, picks=picks,
                         reject_by_annotation=reject_by_annotation)
     # Dropping the bad epochs if there were any:
-    epochs.drop_bad(verbose=verbose)
+    epochs.drop_bad()
     # Adding the meta data to the table. The meta data are created by parsing the events strings, as each substring
     # contains specific info about the trial:
     if meta_data_column is not None:
@@ -611,49 +599,8 @@ def automated_artifact_detection(epochs, standard_deviation_cutoff=4, trial_prop
     return epochs, ind_trials_to_drop
 
 
-def find_interruption_index(events, event_dict, interuption_landmark, interruption_block_num=None):
-    """
-    This function asks the user whether there was an interruption in the experiment. If there was one, the function
-    will ask which block the interruption occured in to find the index of the interruption. This is required by some
-    functions that compute averaging accross the experiment. Indeed, if you had interruption, the signal change a lot
-    inbetween, and averaging across the experiment without regard for the interruption is meaningless.
-    :param events: (np array) contain the events indices and their identity
-    :param event_dict: (dict) mapping between the events identity and their description
-    :param interuption_landmark: (string) name of what to use to refer to for the interruption findings.
-    :param interruption_block_num: (None or int) if you already know when the interruption occured, it can be passed
-    in this function to avoid passing things manually.
-    :return: interruption_index: int, index of where the interruption occured.
-    """
-
-    # Asking whether there was an interruption. If the interruption block number is not none, then no need to ask:
-    if interruption_block_num is None:
-        interuption = \
-            input("Was your experiment interrupted at some point?")
-    else:
-        interuption = "yes"
-
-    if interuption.lower() == "yes":
-        if interruption_block_num is None:
-            interruption_block_num = \
-                input("In which {0} was your experiment interrupted?".format(
-                    interuption_landmark))
-        else:
-            interruption_block_num = str(interruption_block_num)
-        # Creating the description string for when the interruption happened:
-        interuption_event_desc = interuption_landmark + "_" + interruption_block_num
-        # Looking for all events fitting the description:
-        evts = [event_dict[desc]
-                for desc in event_dict if interuption_event_desc in desc]
-        # Now looking for the index of the earliest occurence:
-        interruption_index = int(min([evt[0] for evt in events if evt[2] in evts]))
-    else:
-        interruption_index = False
-
-    return interruption_index
-
-
 def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types=None,
-               do_baseline_normalization=True, verbose=True):
+               do_baseline_normalization=True):
     """
     This function computes the high gamma signal by filtering the signal in bins between a defined frequency range.
     In each frequency bin, the hilbert transform is applied and the amplitude is extracted (i.e. envelope). The envelope
@@ -669,13 +616,11 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
     :param channel_types: (dict) name of the channels for which the high gamma should be computed. This is important
     to avoid taking in electrodes which we might not want
     :param do_baseline_normalization: (bool) whether to do baseline normalization
-    :param verbose: (bool) verbose level for MNE
     :return: frequency_band_signal: (mne raw object) dictionary containing raw objects with high gamma in the different
     frequency bands
     """
 
     def divide_by_average(data):
-        print('Dividing channels amplitude by average amplitude')
         if not isinstance(data, np.ndarray):
             raise TypeError('Input value must be an ndarray')
         if data.ndim != 2:
@@ -707,9 +652,9 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
         raw.info["ch_names"]) if ind not in picks]
     # Creating copies of the raw for the channels for which the frequency band should be computed, and another for
     # the channels for which it shouldn't be computed, to avoid messing up the channels indices:
-    freq_band_raw = raw.copy().pick(picks, verbose=verbose)
+    freq_band_raw = raw.copy().pick(picks)
     if len(not_picks) != 0:
-        rest_raw = raw.copy().pick(not_picks, verbose=verbose)
+        rest_raw = raw.copy().pick(not_picks)
 
     # ==========================================================
     # Create frequency bins:
@@ -723,20 +668,15 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
     # ==========================================================
     # Compute HG for each frequency bin:
     for freq_bin in bins:
-        if verbose:
-            print('')
-            print('-' * 40)
-            print('Computing the frequency in band: ' + str(freq_bin))
-            # Filtering the signal and apply the hilbert:
-            print('Computing the envelope amplitude')
+        print('-' * 40)
+        print('Computing the frequency in band: ' + str(freq_bin))
+        # Filtering the signal and apply the hilbert:
+        print('Computing the envelope amplitude')
         bin_power = freq_band_raw.copy().filter(freq_bin[0], freq_bin[1],
-                                                n_jobs=njobs, verbose=verbose).apply_hilbert(envelope=True,
-                                                                                             verbose=verbose)
+                                                n_jobs=njobs).apply_hilbert(envelope=True)
 
         # Now, dividing the amplitude by the mean, channel wise:
         if do_baseline_normalization:
-            if verbose:
-                print('Divide by average')
             bins_amp.append(divide_by_average(bin_power[:][0]))
         else:
             bins_amp.append(bin_power[:][0])
@@ -767,7 +707,7 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
                             "bands computations!")
 
     # Recreating mne raw object:
-    hg_signal = mne.io.RawArray(frequency_band, info, verbose=verbose)
+    hg_signal = mne.io.RawArray(frequency_band, info)
     # Adding back the untouched channels:
     if len(not_picks) != 0:
         hg_signal.add_channels([rest_raw])
@@ -832,21 +772,20 @@ def add_fiducials(raw, fs_directory, subject_id):
     return raw, trans
 
 
-def plot_electrode_localization(mne_object, subject, fs_dir, config, save_root, step, signal, file_prefix,
+def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, step, signal, file_prefix,
                                 montage_space="T1", file_extension='-loc.png', channels_to_plot=None,
                                 plot_elec_name=False):
     """
     This function plots and saved the psd of the chosen electrodes.
     :param mne_object: (mne object: raw, epochs, evoked...) contains the mne object with the channels info
-    :param subject_info: (custom object) contains info about the subject
-    :param preprocessing_parameters: (custom object) contains the preprocessing info, required to generate the
-    save directory
-    :param step_name: (string) name of the step that this is performed under to save the data
-    :param subject_id: (string) name of the subject! Not necessary if you want to plot in mni space
-    :param fs_subjects_directory: (string or pathlib path) path to the free surfer subjects directory. Not required if
-    you want to plot in mni space
-    :param data_type: (string) type of data that are being plotted
-    :param file_extension: (string) extension of the pic file for saving
+    :param subject: (string) subject ID
+    :param fs_dir: (string or path object) freesurfer directory containing the subject's data
+    :param param: (dict) contains analysis parameters
+    :param save_root: (string) directory to save the figures
+    :param step: (string) name of the analysis step for saving the parameters.
+    :param signal: (string) name of the signal
+    :param file_prefix: (string) prefix for file saving
+    :param file_extension: (string) ending of the file name
     :param channels_to_plot: (list) contains the different channels to plot. Can pass list of channels types, channels
     indices, channels names...
     :param montage_space: (string)
@@ -882,9 +821,7 @@ def plot_electrode_localization(mne_object, subject, fs_dir, config, save_root, 
         try:
             data_to_plot = mne_object.copy().pick(ch_type)
         except ValueError:
-            mne.utils.warn("You have attempted to plot {0} channels, but none where found in your signal".
-                           format(ch_type),
-                           RuntimeWarning)
+            print("No {0} channels for this subject".format(ch_type))
             continue
         # Plotting the brain surface with the electrodes and making a snapshot
         if ch_type == "ecog":
@@ -919,12 +856,12 @@ def plot_electrode_localization(mne_object, subject, fs_dir, config, save_root, 
             brain_snapshot_files.append(full_file_name)
         mne.viz.close_3d_figure(fig)
     # Saving the config:
-    save_config(config, save_path, step, signal, file_prefix, file_extension.split('.')[0])
+    save_param(param, save_path, step, signal, file_prefix, file_extension.split('.')[0])
 
     return None
 
 
-def roi_mapping(mne_object, list_parcellations, subject, fs_dir, config, save_root, step, signal, file_prefix,
+def roi_mapping(mne_object, list_parcellations, subject, fs_dir, param, save_root, step, signal, file_prefix,
                 file_extension='mapping.csv'):
     """
     This function maps the electrodes on different atlases. You can pass whatever atlas you have the corresponding
@@ -934,7 +871,7 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, config, save_ro
     naming of the free surfer parcellation files.
     :param subject: (string) name of the subject to do access the fs recon
     :param fs_dir: (string or pathlib path object) path to the freesurfer directory containing all the participants
-    :param config: (dictionary) copy of the parameters used to generate the data. Always saving
+    :param param: (dictionary) copy of the parameters used to generate the data. Always saving
     it alongside the data to always know what happened to them
     :param save_root: (path string of path object) path to where the data should be saved
     :param step: (string) name of the preprocessing step, saving the data in a separate folder
@@ -988,7 +925,7 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, config, save_ro
         # Saving the corresponding mapping:
         labels_df[mapping].to_csv(Path(full_file_name), index=False)
     # Saving the config:
-    save_config(config, save_path, step, signal, file_prefix, file_extension.split('.')[0])
+    save_param(param, save_path, step, signal, file_prefix, file_extension.split('.')[0])
 
     return labels_df
 
@@ -1001,7 +938,6 @@ def description_ch_rejection(raw, bids_path, channels_description, discard_bads=
     :param raw: (mne_raw object) contains the data and channels to investigate
     :param bids_path: (mne_bids object) path to the _channel.tsv file
     :param channels_description: (str or list) contain the channels descriptions to set as bad channels.
-    :param subject_info: (subject_info object) contains info about the participants
     :param discard_bads: (boolean) whether or not to discard the channels that were marked as bads as well
     :return:
     """
@@ -1163,15 +1099,20 @@ def project_elec_to_surf(raw, subjects_dir, subject, montage_space="T1"):
     """
     # Loading the left and right pial surfaces:
     if montage_space == "T1":
-        left_surf = read_geometry(Path(subjects_dir, subject, "surf", "lh.pial"))
-        right_surf = read_geometry(Path(subjects_dir, subject, "surf", "rh.pial"))
+        # Create the file names to the directory:
+        lhfile = Path(subjects_dir, subject, "surf", "lh.pial")
+        rhfile = Path(subjects_dir, subject, "surf", "lh.pial")
+        left_surf = read_geometry(str(lhfile))
+        right_surf = read_geometry(str(rhfile))
     elif montage_space == "MNI":
         sample_path = mne.datasets.sample.data_path()
         subjects_dir = Path(sample_path, 'subjects')
-        fetch_fsaverage(subjects_dir=subjects_dir, verbose=True)  # Downloading the data if needed
+        fetch_fsaverage(subjects_dir=str(subjects_dir), verbose=True)  # Downloading the data if needed
         subject = "fsaverage"
-        left_surf = read_geometry(Path(subjects_dir, subject, "surf", "lh.pial"))
-        right_surf = read_geometry(Path(subjects_dir, subject, "surf", "rh.pial"))
+        lhfile = Path(subjects_dir, subject, "surf", "lh.pial")
+        rhfile = Path(subjects_dir, subject, "surf", "lh.pial")
+        left_surf = read_geometry(str(lhfile))
+        right_surf = read_geometry(str(rhfile))
     else:
         raise Exception("You have passed a montage space that is not supported! Either MNI or T1!")
 
@@ -1221,7 +1162,7 @@ def project_elec_to_surf(raw, subjects_dir, subject, montage_space="T1"):
 
 def laplacian_referencing(raw, reference_mapping, channel_types=None,
                           n_jobs=1, relocate_edges=True,
-                          subjects_dir=None, subject=None, montage_space=None, verbose=True):
+                          subjects_dir=None, subject=None, montage_space=None):
     """
     This function performs laplacian referencing by subtracting the average of two neighboring electrodes to the
     central one. So for example, if you have electrodes G1, G2, G3, you can reference G2 as G2 = G2 - mean(G1, G2).
@@ -1269,6 +1210,8 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
     mat_shape = np.squeeze(raw.get_data(picks=0)).shape
     empty_mat = np.empty(mat_shape)
     empty_mat[:] = np.nan
+    # Extract the montage:
+    montage = raw.get_montage()
     # performing the laplace referencing:
     for ch in reference_mapping.keys():
         if reference_mapping[ch]["ref_1"] is None:
@@ -1304,12 +1247,15 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
                           (montage.dig[ch_ind]["r"][1] + montage.dig[ref_ind]["r"][1]) / 2, \
                           (montage.dig[ch_ind]["r"][2] + montage.dig[ref_ind]["r"][2]) / 2,
                 montage.dig[ch_ind]["r"] = np.array([x, y, z])
-                # Adding the montage back:
-                raw.set_montage(montage, on_missing="ignore", verbose=verbose)
+
+    if relocate_edges:
+        # Adding the montage back:
+        raw.set_montage(montage, on_missing="ignore", verbose="WARNING")
 
     # Projecting the ecog channels to the surface if they were relocated:
     if relocate_edges:
-        if len(mne.pick_types(raw.info, ecog=True)) > 0:
+        ecog_channels = mne.pick_types(raw.info, ecog=True)
+        if len(ecog_channels) > 0:
             project_elec_to_surf(raw, subjects_dir, subject, montage_space=montage_space)
 
     return raw, reference_mapping, bad_channels
@@ -1379,8 +1325,8 @@ def project_montage_to_surf(montage, channel_types, subject, fs_dir):
     never on the seeg!
     """
     # Read the surfaces:
-    left_surf = read_geometry(Path(fs_dir, subject, "surf", "lh.pial"))
-    right_surf = read_geometry(Path(fs_dir, subject, "surf", "rh.pial"))
+    left_surf = read_geometry(str(Path(fs_dir, subject, "surf", "lh.pial")))
+    right_surf = read_geometry(str(Path(fs_dir, subject, "surf", "rh.pial")))
     # Extract the channels from the montage:
     ecog_channels = [ch for ch in montage.ch_names if channel_types[ch] == "ecog"]
 
