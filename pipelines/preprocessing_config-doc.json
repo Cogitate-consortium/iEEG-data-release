@@ -1,13 +1,23 @@
 {
+    "session_comment": "Session to preprocess (bids convention)",
     "session": "1",
+    "task_comment": "Task to preprocess(bids convention)",
     "task": "Dur",
+    "data_type_comment": "data_type to preprocess(bids convention). The preprocessing pipeline was intended for IEEG data only and should not be applied to other data types",
     "data_type": "ieeg",
+    "downsample_rate_comment": "Rate at which the data should be downsampled in Hz",
     "downsample_rate": 512,
+    "njobs_comment": "Number of cores to use for parallelization",
     "njobs": 1,
+    "save_intermediary_steps_comment": "If true, the data will be saved to file after each step",
     "save_intermediary_steps": true,
+    "check_plots_comment": "If set to True, check plots such as PSD will be plotted.",
     "check_plots": false,
+    "plot_single_channels_comment": "If set to true, the check plots will be generated separately for each channel",
     "plot_single_channels": false,
+    "montage_space_comment": "Montage space for the electrodes. The COGITATE data only have the T1 coordinates as part of the release, but can be set to any other space supported by MNE for other data (though only tested for T1 and MNI).",
     "montage_space": "T1",
+    "preprocessing_steps_comment": "List of the steps to apply as part of the preprocessing pipeline. The order of the list specifies order of execution. For each step, there should be a matching sub-dictionary matching the name specifying the parameter for that step!",
     "preprocessing_steps": [
         "plot_channels_loc",
         "description_bad_channels_rejection",
@@ -18,8 +28,11 @@
         "erp_computations",
         "epoching"
     ],
+    "plot_channels_loc_comment": "parameters for plotting the channels localization on the brain",
     "plot_channels_loc": {
+        "broadband_comment": "Signal to use. For this step, it does not matter so much, as plotting channels should be agnostic to computed signal, but kept for consistency with other steps.",
         "broadband": {
+            "channel_types_comment": "Channel types to plot on the brain",
             "channel_types": {
                 "ecog":  true,
                 "seeg":  true,
@@ -27,7 +40,9 @@
             }
         }
     },
+    "atlas_mapping_comment": "Parameters for the atlas mapping, i.e. extracting anatomical labels for each electrode according to a particular atlas.",
     "atlas_mapping": {
+        "broadband_comment": "Signal to use. For this step, it does not matter so much, as anatomical labels should be agnostic to computed signal, but kept for consistency with other steps.",
         "broadband": {
             "copy_recon": true,
             "recon_source": "{0}/{0}_ECOG_V1/RESOURCES/ElecRecon/fs_recon/{0}",
@@ -38,28 +53,39 @@
             "remove_channels_unknown": true
         }
     },
+    "notch_filtering_comment": "Notch filtering parameters",
     "notch_filtering": {
+        "broadband_comment": "Signal on which to apply filtering. Broadband specifies that this should be applied on the raw data. The notch filtering should in most cases be applied to the raw signal, prior to any frequency computations",
         "broadband": {
+            "channel_types_comment": "channels on which to apply the notch filtering",
             "channel_types": {
                 "ecog":  true,
                 "seeg":  true,
                 "exclude": "bads"
             },
+            "frequency_comment": "Frequency to remove (in Hz)",
             "frequency": 60,
+            "remove_harmonics_comment": "If true, removing harmonics from 60 to Nyquist frequency (120Hz, 180Hz...)",
             "remove_harmonics": true,
+            "filter_type_comment": "Filter type to use. Default is FIR, other option is butterworth_4o",
             "filter_type": "fir",
+            "cutoff_lowpass_bw_comment": "Low pass bandwidth. Only use for butterworth_4o",
             "cutoff_lowpass_bw": 63,
+            "cutoff_highpass_bw_comment": "High pass bandwidth. Only use for butterworth_4o",
             "cutoff_highpass_bw": 57
         }
     },
+    "manual_bad_channels_rejection_comment": "Parameters for removing bad channels manually. If applied, the data will be plotted with the MNE interactive plotting. Users can then click on the channels to remove",
     "manual_bad_channels_rejection": {
         "broadband": {
             "channel_types": "all",
             "method": "manual"
         }
     },
+    "description_bad_channels_rejection_comment": "Parameters to apply the bad channels rejection based on annotations in the BIDS files. The channel.tsv file in the bids contains description for each channel, which can be used to annotate certain channels. As part of the COGITATE, the channels were annotated by epileptologists and by researchers and their annotation can be used to discard the channels",
     "description_bad_channels_rejection": {
         "broadband": {
+            "bad_channels_description_comment": "List of annotations to consider as bad channels. The default options are epileptic onset based on epileptologist reports, while the ones with _alex are the annotation of the COGITATE researcher",
             "bad_channels_description": ["epileptic_onset", "noisy_alex", "dead_alex", "wrong_channel_alex",
                 "outside_brain"],
             "discard_bads": true
