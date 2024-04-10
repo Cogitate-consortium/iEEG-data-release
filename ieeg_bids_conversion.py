@@ -87,11 +87,10 @@ def ieeg_bids_converter(subject_id, session, task):
     position = electrodes_tsv_t1[["x", "y", "z"]].to_numpy()  # Extract channels positions
     montage_t1 = mne.channels.make_dig_montage(ch_pos=dict(zip(channels, position)),
                                                coord_frame="mri")  # Create T1 dig montage
-    # Convert the montage to RAS:
-    convert_montage_to_ras(montage_t1, "sub-" + subject_id.replace('C', 'S'),
-                           r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\bids_old\derivatives\fs")
+
     # Create the BIDS path
-    bids_path = BIDSPath(root=ev.bids_root, subject=subject_id, session=session, task=task)
+    bids_path = BIDSPath(root=ev.bids_root, subject=subject_id, session=session, task=task, space="Other",
+                         datatype="ieeg")
 
     # ==================================================================================================================
     # Save the data to BIDS:
@@ -99,7 +98,7 @@ def ieeg_bids_converter(subject_id, session, task):
         raw,
         bids_path,
         montage=montage_t1,
-        acpc_aligned=True,
+        acpc_aligned=False,
         overwrite=True,
         allow_preload=True,
         format='BrainVision'
