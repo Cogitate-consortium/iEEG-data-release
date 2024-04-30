@@ -1,5 +1,10 @@
 # Custom
 bids/
+bids_hpc/
+bids_new/
+raw/
+raw_hpc/
+data_paper_figures
 data_release/
 subjects_reports/
 .idea/
