@@ -527,7 +527,7 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
             norm_data = data / data.mean(axis=1)[:, None]
             # Check that the normalized data are indeed what they should be. We are dividing the data by a constant.
             # So if we divide the normalized data by the original data, we should get a constant:
-            if len(np.unique((data[0, :] / norm_data[0, :]).round(decimals=15))) != 1:
+            if len(np.unique((data[0, :] / norm_data[0, :]).round(decimals=13))) != 1:
                 raise Exception(
                     "The normalization of the frequency band went wrong! The division of normalized vs non "
                     "normalized data returned several numbers, which shouldn't be the case!")
@@ -641,15 +641,14 @@ def compute_erp(raw, frequency_range=None, njobs=1, channel_types=None, **kwargs
     return erp_raw
 
 
-def add_fiducials(raw, fs_directory, subject_id):
+def add_fiducials(montage, fs_directory, subject_id):
     """
     This function add the estimated fiducials to the montage and compute the transformation
-    :param raw: (mne raw object) data to which the fiducials should be added
+    :param montage: (mne raw object) data to which the fiducials should be added
     :param fs_directory: (path string) path to the freesurfer directory
     :param subject_id: (string) name of the subject
     :return: mne raw object and transformation
     """
-    montage = raw.get_montage()
     # If the coordinates are in mni_tal coordinates:
     if montage.get_positions()['coord_frame'] == "mni_tal":
         sample_path = mne.datasets.sample.data_path()
@@ -663,11 +662,11 @@ def add_fiducials(raw, fs_directory, subject_id):
         montage.add_estimated_fiducials(subject_id, fs_directory)
         trans = mne.channels.compute_native_head_t(montage)
     else:
+        # If the montage space is unknown, assume that it is in MRI coordinate frame:
         montage.add_estimated_fiducials(subject_id, fs_directory)
         trans = mne.channels.compute_native_head_t(montage)
-    raw.set_montage(montage, on_missing="warn")
 
-    return raw, trans
+    return montage, trans
 
 
 def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, step, signal, file_prefix,
@@ -697,7 +696,8 @@ def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, s
     path_generator(save_path)
 
     # Adding the estimated fiducials and compute the transformation to head:
-    mne_object, trans = add_fiducials(mne_object, fs_dir, subject)
+    montage, trans = add_fiducials(mne_object.get_montage(), fs_dir, subject)
+    mne_object.set_montage(montage, on_missing="warn")
     # If we are plotting the electrodes in MNI space, fetching the data:
     if montage_space.lower() == "mni":
         fs_subjects_directory = mne.datasets.sample.data_path() + '/subjects'
@@ -999,7 +999,7 @@ def project_elec_to_surf(raw, subjects_dir, subject, montage_space="T1"):
     if montage_space == "T1":
         # Create the file names to the directory:
         lhfile = Path(subjects_dir, subject, "surf", "lh.pial")
-        rhfile = Path(subjects_dir, subject, "surf", "lh.pial")
+        rhfile = Path(subjects_dir, subject, "surf", "rh.pial")
         left_surf = read_geometry(str(lhfile))
         right_surf = read_geometry(str(rhfile))
     elif montage_space == "MNI":
@@ -1008,7 +1008,7 @@ def project_elec_to_surf(raw, subjects_dir, subject, montage_space="T1"):
         fetch_fsaverage(subjects_dir=str(subjects_dir), verbose=True)  # Downloading the data if needed
         subject = "fsaverage"
         lhfile = Path(subjects_dir, subject, "surf", "lh.pial")
-        rhfile = Path(subjects_dir, subject, "surf", "lh.pial")
+        rhfile = Path(subjects_dir, subject, "surf", "rh.pial")
         left_surf = read_geometry(str(lhfile))
         right_surf = read_geometry(str(rhfile))
     else:
@@ -1360,3 +1360,76 @@ def get_roi_channels(channels, rois, bids_path, atlas):
                 break
 
     return roi_channels
+
+
+def mri_2_mni(montage, subject, fs_dir):
+    """
+    Using the Talairach transform to convert the MRI coordinates to fsaverage
+    """
+    # Add the fiducials: ras -> mri:
+    # montage, trans = add_fiducials(montage, fs_dir, subject)
+
+    # Fetch the transform from mri -> mni
+    mri_mni_trans = mne.read_talxfm(subject, fs_dir)
+    # Apply the transform mri -> fsaverage:
+    montage.apply_trans(mri_mni_trans)  # mri to mni_tal (MNI Taliarach)
+    # Transform mni_tal back to mri coordinates (with identity matrix) since we want to plot in mri coordinates:
+    montage.apply_trans(mne.transforms.Transform(fro="mni_tal", to="mri", trans=np.eye(4)))
+    mni_positions = montage.get_positions()['ch_pos']
+    return mni_positions
+
+
+def count_colors(values, cmap):
+    from collections import Counter
+    # Count the number of entries for each values:
+    counts = dict(Counter(values))
+
+    # Get the list of counts from the dictionary
+    counts_val = list(counts.values())
+
+    # Create a colormap
+    cmap = plt.cm.get_cmap(cmap)
+
+    # Normalize the counts to [0, 1] to match the colormap's scale
+    norm_counts = [(count - min(counts_val)) / (max(counts_val) - min(counts_val)) for count in counts_val]
+
+    # Map normalized counts to colors
+    colors = [cmap(norm) for norm in norm_counts]
+
+    # Convert RGBA colors to RGB
+    rgb_colors = [(r, g, b) for r, g, b, _ in colors]
+
+    # Create a new dictionary mapping keys to RGB colors
+    val_colors = dict(zip(counts.keys(), rgb_colors))
+
+    return val_colors
+
+
+def exclude_distant_channels(montage, subject, fs_dir, max_dist=5):
+    """
+
+    """
+    # Load the surface file using nibabel
+    # Create the file names to the directory:
+    lhfile = Path(fs_dir, subject, "surf", "lh.pial")
+    rhfile = Path(fs_dir, subject, "surf", "rh.pial")
+    left_surf = read_geometry(str(lhfile))
+    right_surf = read_geometry(str(rhfile))
+    # Combine all vertices:
+    full_surf = np.concatenate([left_surf[0], right_surf[0]])
+    out_elec = []
+
+    # Loop through each electrode in the montage:
+    ch_positions = montage.get_positions()['ch_pos']
+    for ch, pos in ch_positions.items():
+        dist = np.sqrt(np.sum((full_surf - pos * 1000) ** 2, axis=1))
+        if np.min(dist) >= max_dist:
+            # Find the index of this electrode:
+            ch_ind = montage.ch_names.index(ch)
+            del montage.ch_names[ch_ind]
+            del montage.dig[ch_ind]
+    return montage
+
+
+
+
