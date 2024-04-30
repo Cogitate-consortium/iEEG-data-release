@@ -1,4 +1,7 @@
 import os
+import pandas as pd
+from pathlib import Path
+import environment_variables as ev
 import papermill as pm
 from nbconvert import HTMLExporter
 import nbformat
@@ -6,8 +9,6 @@ import shutil
 
 
 def copy_images(src, dst):
-    src = 'img'  # Source directory
-    dst = 'subjects_reports/img'  # Destination directory
 
     if not os.path.exists(dst):
         os.makedirs(dst)
@@ -32,7 +33,7 @@ def subject_report_html(subject_id):
     pm.execute_notebook(
         input_nb,
         output_nb,
-        parameters=dict(subject_id=subject_id)
+        parameters=dict(subject=subject_id)
     )
 
     # Convert the output notebook to HTML
@@ -50,6 +51,11 @@ def subject_report_html(subject_id):
 
 
 if __name__ == "__main__":
-    subjects = ['CF102', 'CF103']  # Add your subjects here
+    subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
+
     for subject in subjects:
-        subject_report_html(subject)
+        print(subject)
+        try:
+            subject_report_html(subject.split("-")[1])
+        except:
+            print("WARNING: The notebook could not be generated for sub-" + subject)
