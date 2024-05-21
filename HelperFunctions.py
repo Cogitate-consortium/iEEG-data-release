@@ -670,7 +670,7 @@ def add_fiducials(montage, fs_directory, subject_id):
 
 
 def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, step, signal, file_prefix,
-                                montage_space="T1", file_extension='-loc.png', channels_to_plot=None,
+                                file_extension='-loc.png', channels_to_plot=None,
                                 plot_elec_name=False):
     """
     This function plots and saved the psd of the chosen electrodes.
@@ -685,12 +685,14 @@ def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, s
     :param file_extension: (string) ending of the file name
     :param channels_to_plot: (list) contains the different channels to plot. Can pass list of channels types, channels
     indices, channels names...
-    :param montage_space: (string)
     :param plot_elec_name: (string) whethre or not to print the electrodes names onto the snapshot!
     :return:
     """
     if channels_to_plot is None:
         channels_to_plot = ["ecog", "seeg"]
+    if mne_object.get_montage().get_positions()['coord_frame'] == "mni_tal":
+        subject = "fsaverage"
+        fetch_fsaverage(subjects_dir=fs_dir, verbose=True)
     # First, generating the root path to save the data:
     save_path = Path(save_root, step, signal)
     path_generator(save_path)
@@ -698,11 +700,6 @@ def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, s
     # Adding the estimated fiducials and compute the transformation to head:
     montage, trans = add_fiducials(mne_object.get_montage(), fs_dir, subject)
     mne_object.set_montage(montage, on_missing="warn")
-    # If we are plotting the electrodes in MNI space, fetching the data:
-    if montage_space.lower() == "mni":
-        fs_subjects_directory = mne.datasets.sample.data_path() + '/subjects'
-        subject = "fsaverage"
-        fetch_fsaverage(subjects_dir=fs_subjects_directory, verbose=True)
 
     brain_snapshot_files = []
     # Setting the two views
@@ -985,24 +982,22 @@ def laplace_ref_fun(to_ref, ref_1=None, ref_2=None):
     return referenced_data
 
 
-def project_elec_to_surf(raw, subjects_dir, subject, montage_space="T1"):
+def project_elec_to_surf(raw, subjects_dir, subject):
     """
     This function project surface electrodes onto the brain surface to avoid having them floating a little.
     :param raw: (mne raw object)
     :param subjects_dir: (path or string) path to the freesurfer subject directory
     :param subject: (string) name of the subject
-    :param montage_space: (string) montage space. If T1, then the projection will be done to the T1 scan of the subject
-    If MNI, will be done to fsaverage surface.
     :return:
     """
     # Loading the left and right pial surfaces:
-    if montage_space == "T1":
+    if raw.get_montage().get_positions()['coord_frame'] == "mri":
         # Create the file names to the directory:
         lhfile = Path(subjects_dir, subject, "surf", "lh.pial")
         rhfile = Path(subjects_dir, subject, "surf", "rh.pial")
         left_surf = read_geometry(str(lhfile))
         right_surf = read_geometry(str(rhfile))
-    elif montage_space == "MNI":
+    elif raw.get_montage().get_positions()['coord_frame'] == "mni_tal":
         sample_path = mne.datasets.sample.data_path()
         subjects_dir = Path(sample_path, 'subjects')
         fetch_fsaverage(subjects_dir=str(subjects_dir), verbose=True)  # Downloading the data if needed
@@ -1060,7 +1055,7 @@ def project_elec_to_surf(raw, subjects_dir, subject, montage_space="T1"):
 
 def laplacian_referencing(raw, reference_mapping, channel_types=None,
                           n_jobs=1, relocate_edges=True,
-                          subjects_dir=None, subject=None, montage_space=None):
+                          subjects_dir=None, subject=None):
     """
     This function performs laplacian referencing by subtracting the average of two neighboring electrodes to the
     central one. So for example, if you have electrodes G1, G2, G3, you can reference G2 as G2 = G2 - mean(G1, G2).
@@ -1085,7 +1080,6 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
     :param subjects_dir: (string) directory to the freesurfer data. This is necessary, as the edges get relocated,
     the ecog channels need to be projected to the brain surface.
     :param subject: (string) Name of the subject to access the right surface
-    :param montage_space: (string) name of the montage space of the electrodes, either T1 or MNI
     :return:
     mne raw object: with laplace referencing performed.
     """
@@ -1154,7 +1148,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
     if relocate_edges:
         ecog_channels = mne.pick_types(raw.info, ecog=True)
         if len(ecog_channels) > 0:
-            project_elec_to_surf(raw, subjects_dir, subject, montage_space=montage_space)
+            project_elec_to_surf(raw, subjects_dir, subject)
 
     return raw, reference_mapping, bad_channels
 

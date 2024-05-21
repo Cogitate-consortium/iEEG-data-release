@@ -11,6 +11,11 @@ from HelperFunctions import (notch_filtering,
                              plot_electrode_localization)
 import environment_variables as ev
 
+# Fetch fsaverage:
+if not os.path.isdir(ev.fs_directory):
+    os.makedirs(ev.fs_directory)
+mne.datasets.fetch_fsaverage(subjects_dir=ev.fs_directory, verbose=None)
+
 SUPPORTED_STEPS = [
     "notch_filtering",
     "manual_bad_channels_rejection",
@@ -93,14 +98,22 @@ def preprocessing(param, subjects):
                              session=param["session"],
                              datatype=param["data_type"],
                              task=param["task"])
-
+        read_raw_bids(bids_path=bids_path, verbose="WARNING")
         # Loading the data under the term broadband, as it is what they are as long as no further
         # filtering was employed
         raw = {"broadband": read_raw_bids(bids_path=bids_path, verbose="ERROR")}
 
+        # If the montage is in unknown coordinates, assume that it is in MRI RAS:
+        montage = raw["broadband"].get_montage()
+        if montage.get_positions()['coord_frame'] == 'unknown':
+            # If the montage space is unknown, assume that it is in MRI coordinate frame:
+            ch_pos = montage.get_positions()['ch_pos']
+            montage = mne.channels.make_dig_montage(ch_pos=ch_pos, coord_frame="mri")
+            raw["broadband"].set_montage(montage, on_missing="warn")
+
         # Load the data in memory:
         raw["broadband"].load_data()
-        # Downsampling the signal, otherwise things take forever:
+        # Downsampling the signal, to ensure that all subjects have the same sampling rate
         if param['downsample_rate'] is not None:
             print("Downsampling the signal to {}Hz, this may take a little while".format(param['downsample_rate']))
             raw["broadband"].resample(param['downsample_rate'], n_jobs=param["njobs"], verbose='WARNING')
@@ -114,14 +127,13 @@ def preprocessing(param, subjects):
         print('Creating annotations')
         events_from_annot, event_dict = mne.events_from_annotations(
             raw["broadband"], verbose='WARNING')
-        # And then deleting the annotations, not needed anymore. Makes interactive plotting stuff more reactive:
+        # And then deleting the annotations, not needed anymore. Makes interactive plotting more reactive:
         raw["broadband"].set_annotations(mne.Annotations(onset=[], duration=[], description=[]))
 
         # ==============================================================================================================
         # Preprocessing loop
         # ==============================================================================================================
         for step in param["preprocessing_steps"]:
-
             # ----------------------------------------------------------------------------------------------------------
             # Notch filter:
             # ----------------------------------------------------------------------------------------------------------
@@ -277,7 +289,6 @@ def preprocessing(param, subjects):
                             laplacian_referencing(raw[signal], laplacian_mapping,
                                                   subjects_dir=ev.fs_directory,
                                                   subject="sub-" + subject,
-                                                  montage_space=param["montage_space"],
                                                   **step_parameters[signal])
                         # Saving the data:
                         if param["save_intermediary_steps"]:
@@ -383,9 +394,8 @@ def preprocessing(param, subjects):
                         epochs[signal] = epoching(raw[signal], events_from_annot, event_dict,
                                                   **step_parameters[signal])
                         # Saving the data:
-                        if param["save_intermediary_steps"]:
-                            mne_data_saver(epochs[signal], param, save_root, step, signal, file_prefix,
-                                           file_extension="-epo.fif")
+                        mne_data_saver(epochs[signal], param, save_root, step, signal, file_prefix,
+                                       file_extension="-epo.fif")
                     elif 'raw' not in locals():
                         raise Exception(ERROR_RAW_MISSING.format(step=step))
                     elif signal not in raw:
@@ -404,11 +414,17 @@ def preprocessing(param, subjects):
                 print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
-                # First, relocating the free surfer directory:
-                subject_free_surfer_dir = Path(
-                    ev.fs_directory, "sub-" + subject)
-                assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this "
-                                                          "subject! Make sure to download it")
+                # Check if the freesurfer folder is available
+                if montage.get_positions()['coord_frame'] == 'mri':
+                    subject_free_surfer_dir = Path(
+                        ev.fs_directory, "sub-" + subject)
+                    assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
+                                                              "subject! Make sure to download it")
+                elif montage.get_positions()['coord_frame'] == 'mni_tal':
+                    subject_free_surfer_dir = Path(
+                        ev.fs_directory, "fsaverage")
+                    assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
+                                                              "subject! Make sure to download it")
 
                 # Getting the anatomical labels
                 for signal in step_parameters.keys():  # The localization should be the same across signal, but kept for
@@ -479,11 +495,17 @@ def preprocessing(param, subjects):
                 print("Step: " + step)
                 # Get the parameters of this specific step:
                 step_parameters = param[step]
-                # First, relocating the free surfer directory:
-                subject_free_surfer_dir = Path(ev.fs_directory, "sub-" + subject)
-                print(subject_free_surfer_dir)
-                assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this "
-                                                          "subject! Make sure to download it")
+                # Check if the freesurfer folder is available
+                if montage.get_positions()['coord_frame'] == 'mri':
+                    subject_free_surfer_dir = Path(
+                        ev.fs_directory, "sub-" + subject)
+                    assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
+                                                              "subject! Make sure to download it")
+                elif montage.get_positions()['coord_frame'] == 'mni_tal':
+                    subject_free_surfer_dir = Path(
+                        ev.fs_directory, "fsaverage")
+                    assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
+                                                              "subject! Make sure to download it")
 
                 # Plotting the electrodes localization:
                 for signal in step_parameters.keys():  # The localization should be the same across signal, but kept for
@@ -492,12 +514,12 @@ def preprocessing(param, subjects):
                         # Plotting the electrodes localization on the brain surface
                         plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, ev.fs_directory, param,
                                                     save_root, step, signal, file_prefix,
-                                                    montage_space=param["montage_space"], file_extension='-loc.png',
+                                                    file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=False)
                         plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, ev.fs_directory, param,
                                                     save_root, step, signal, file_prefix,
-                                                    montage_space=param["montage_space"], file_extension='-loc.png',
+                                                    file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=True)
 
@@ -505,17 +527,23 @@ def preprocessing(param, subjects):
                         # Plotting the electrodes localization on the brain surface
                         plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, ev.fs_directory,
                                                     param, save_root, step, signal, file_prefix,
-                                                    montage_space=param["montage_space"], file_extension='-loc.png',
+                                                    file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=False)
                         plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, ev.fs_directory,
                                                     param, save_root, step, signal, file_prefix,
-                                                    montage_space=param["montage_space"], file_extension='-loc.png',
+                                                    file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=True)
 
 
 if __name__ == "__main__":
     config_file = r"preprocessing_config-default.json"
-    subjects_list = ["CF102"]
-    preprocessing(config_file, subjects_list)
+    import pandas as pd
+    subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
+    subjects = ["sub-CF102", "sub-CF104", "sub-CF105", "sub-CF106"]
+    for sub in subjects:
+        try:
+            preprocessing(config_file, [sub.split("-")[1]])
+        except:
+            print("WARNING: PREPROCESSING FAILED FOR SUB-" + sub)
