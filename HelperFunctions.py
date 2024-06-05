@@ -1235,7 +1235,7 @@ def project_montage_to_surf(montage, channel_types, subject, fs_dir):
     return montage
 
 
-def create_mni_montage(channels, bids_path, fs_dir, fsaverage_dir):
+def create_montage(channels, bids_path, fs_dir, fsaverage_dir):
     """
     This function fetches the mni coordinates of a set of channels. Importantly, the channels must
     consist of a string with the subject identifier and the channel identifier separated by a minus,
@@ -1267,44 +1267,31 @@ def create_mni_montage(channels, bids_path, fs_dir, fsaverage_dir):
                                 datatype=bids_path.datatype,
                                 task=bids_path.task)
         # Create the name of the mni file coordinates:
-        coordinates_file = 'sub-{}_ses-{}_space-ACPC_electrodes.tsv'.format(subject,
-                                                                            subject_path.session)
+        coordinates_file = 'sub-{}_ses-{}_space-fsaverage_electrodes.tsv'.format(subject,
+                                                                                 subject_path.session)
         channel_file = 'sub-{}_ses-{}_task-{}_channels.tsv'.format(subject, subject_path.session, bids_path.task)
         # Load the coordinates:
         coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
         channels_df = pd.read_csv(Path(subject_path.directory, channel_file), sep='\t')
 
-        # Get the position:
-        position = coordinates_df.loc[coordinates_df['name'].isin(
-            subject_channels), ['x', 'y', 'z']].to_numpy()
         # Get the types of the channels:
-        subject_channel_type = channels_df.loc[channels_df['name'].isin(subject_channels),
-        ['name', 'type']].set_index('name').to_dict()['type']
-        subject_channel_type = {"-".join([subject, ch]): subject_channel_type[ch] for ch in subject_channel_type.keys()}
+        subject_channel_type = (
+            channels_df.loc[channels_df['name'].isin(subject_channels), ['name',
+                                                                         'type']].set_index('name').to_dict())['type']
+        subject_channel_type = {"-".join([subject, ch]): subject_channel_type[ch]
+                                for ch in subject_channel_type.keys()}
         channels_types.update(subject_channel_type)
-        # Create the montage:
-        montage = mne.channels.make_dig_montage(ch_pos=dict(zip(["-".join([subject, ch]) for ch in subject_channels],
-                                                                position)),
-                                                coord_frame="ras")
-        # we need to go from scanner RAS back to surface RAS (requires recon-all)
-        convert_montage_to_mri(montage, "sub-" + subject, subjects_dir=ev.fs_directory)
-        # Add estimated fiducials
-        montage.add_estimated_fiducials("sub-" + subject, fs_dir)
-        # Fetch the transformation from mri -> mni
-        mri_mni_trans = mne.read_talxfm("sub-" + subject, fs_dir)
-        # Extract the channel position from the montage:
-        ch_pos = montage.get_positions()['ch_pos']
-        # Apply affine transformation to each:
-        for ind, ch in enumerate(ch_pos.keys()):
-            mni_coords[ch] = apply_trans(mri_mni_trans, ch_pos[ch] * 1000) / 1000
+
+        # Get the position:
+        for ch in coordinates_df['name'].to_list():
+            mni_coords["-".join([subject, ch])] = (
+                coordinates_df.loc[coordinates_df['name'].isin(subject_channels),['x', 'y', 'z']].to_numpy())
 
     # Create the montage:
     montage = mne.channels.make_dig_montage(ch_pos=mni_coords,
                                             coord_frame='mni_tal')
     # Make sure that the channel types are in lower case:
     channels_types = {ch: channels_types[ch].lower() for ch in channels_types}
-    # Project the montage to the surface:
-    montage = project_montage_to_surf(montage, channels_types, "fsaverage", fsaverage_dir)
     # Add the MNI fiducials
     montage.add_mni_fiducials(fsaverage_dir)
     # In mne-python, plotting electrodes on the brain requires some additional info about the channels:
@@ -1423,7 +1410,3 @@ def exclude_distant_channels(montage, subject, fs_dir, max_dist=5):
             del montage.ch_names[ch_ind]
             del montage.dig[ch_ind]
     return montage
-
-
-
-

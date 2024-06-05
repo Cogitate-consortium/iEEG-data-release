@@ -52,7 +52,6 @@ def subject_report_html(subject_id):
 
 if __name__ == "__main__":
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
-
     for subject in subjects:
         print(subject)
         try:
