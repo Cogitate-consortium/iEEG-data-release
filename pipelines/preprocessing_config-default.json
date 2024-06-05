@@ -58,7 +58,7 @@
     },
     "description_bad_channels_rejection": {
         "broadband": {
-            "bad_channels_description": ["epileptic_onset", "noisy_alex", "dead_alex", "wrong_channel_alex",
+            "bad_channels_description": ["epileptic_onset", "noisy_user1", "dead_user1", "wrong_channel_user1",
                 "outside_brain"],
             "discard_bads": true
         }
