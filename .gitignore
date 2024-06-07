@@ -1,15 +1,13 @@
 # Custom
 bids/
 bids-cogitate/
-bids-release/
-bids_new/
-raw/
-raw_hpc/
+bids-curate/
 data_paper_figures
 data_release/
 subjects_reports/
+subjects_report_v1/
 .idea/
-
+coverage_plots/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
