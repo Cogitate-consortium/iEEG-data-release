@@ -14,7 +14,7 @@ import matplotlib
 import mne
 from mne.viz import plot_alignment, snapshot_brain_montage
 from mne.datasets import fetch_fsaverage
-from mne_bids import convert_montage_to_mri
+from mne_bids import convert_montage_to_mri, BIDSPath
 from nibabel.freesurfer.io import read_geometry
 
 import matplotlib.pyplot as plt
@@ -1235,68 +1235,64 @@ def project_montage_to_surf(montage, channel_types, subject, fs_dir):
     return montage
 
 
-def create_montage(channels, bids_path, fs_dir, fsaverage_dir):
+def create_montage(channels, bids_path, fsaverage_dir):
     """
-    This function fetches the mni coordinates of a set of channels. Importantly, the channels must
-    consist of a string with the subject identifier and the channel identifier separated by a minus,
-    like: SF102-G1. This ensures that the channels positions can be fecthed from the right subject
-    folder. This is specific to iEEG for which we have different channels in each patient which
-    may have the same name.
-    :param channels: (list) name of the channels for whom to fetch the MNI coordinates. Must contain
-    the subject identifier as well as the channel identifier, like SF102-G1.
-    :param bids_path: (mne-bids bidsPATH object) contains all the information to fetch the coordinates.
-    :param fs_dir: (string or pathlib path object) path to the free surfer root folder containing the fsaverage
-    :param fsaverage_dir: (string or pathlib path object) path to the free surfer root folder containing the fsaverage
-    :return: info (mne info object) mne info object with the channels info, including position in MNI space
+    Fetches the MNI coordinates of a set of channels. Channels must include a subject identifier
+    and a channel identifier separated by a hyphen (e.g., 'SF102-G1').
+
+    :param channels: List of channel names to fetch MNI coordinates for. Must include subject and channel identifiers.
+    :param bids_path: mne_bids BIDSPath object with information to fetch coordinates.
+    :param fsaverage_dir: Path to the FreeSurfer root folder containing the fsaverage.
+    :return: mne.Info object with channel info, including positions in MNI space.
     """
-    from mne_bids import BIDSPath
-    from mne.transforms import apply_trans
-    import environment_variables as ev
-    # First, extract the name of each subject present in the channels list:
-    subjects = list(set([channel.split('-')[0] for channel in channels]))
-    # Prepare a dictionary:
+
+    # Extract unique subjects from the channels list
+    subjects = list(set(channel.split('-')[0] for channel in channels))
+
+    # Initialize dictionaries to store MNI coordinates and channel types
     mni_coords = {}
     channels_types = {}
+
     for subject in subjects:
-        # Extract this participant's channels:
-        subject_channels = [channel.split('-')[1] for channel in channels
-                            if channel.split('-')[0] == subject]
-        # Create the path to this particular subject:
+        # Extract channels for the current subject
+        subject_channels = [channel.split('-')[1] for channel in channels if channel.split('-')[0] == subject]
+
+        # Create the path to the subject's BIDS directory
         subject_path = BIDSPath(root=bids_path.root, subject=subject,
-                                session=bids_path.session,
-                                datatype=bids_path.datatype,
-                                task=bids_path.task)
-        # Create the name of the mni file coordinates:
-        coordinates_file = 'sub-{}_ses-{}_space-fsaverage_electrodes.tsv'.format(subject,
-                                                                                 subject_path.session)
-        channel_file = 'sub-{}_ses-{}_task-{}_channels.tsv'.format(subject, subject_path.session, bids_path.task)
-        # Load the coordinates:
+                                session=bids_path.session, datatype=bids_path.datatype, task=bids_path.task)
+
+        # Define the filenames for coordinates and channels
+        coordinates_file = f'sub-{subject}_ses-{subject_path.session}_space-fsaverage_electrodes.tsv'
+        channel_file = f'sub-{subject}_ses-{subject_path.session}_task-{bids_path.task}_channels.tsv'
+
+        # Load the coordinates and channels data
         coordinates_df = pd.read_csv(Path(subject_path.directory, coordinates_file), sep='\t')
         channels_df = pd.read_csv(Path(subject_path.directory, channel_file), sep='\t')
 
-        # Get the types of the channels:
-        subject_channel_type = (
-            channels_df.loc[channels_df['name'].isin(subject_channels), ['name',
-                                                                         'type']].set_index('name').to_dict())['type']
-        subject_channel_type = {"-".join([subject, ch]): subject_channel_type[ch]
-                                for ch in subject_channel_type.keys()}
+        # Extract the types of the channels
+        subject_channel_type = (channels_df.loc[channels_df['name'].isin(subject_channels), ['name', 'type']]
+                                .set_index('name').to_dict())['type']
+        subject_channel_type = {f"{subject}-{ch}": subject_channel_type[ch] for ch in subject_channel_type}
         channels_types.update(subject_channel_type)
 
-        # Get the position:
-        for ch in coordinates_df['name'].to_list():
-            mni_coords["-".join([subject, ch])] = (
-                coordinates_df.loc[coordinates_df['name'].isin(subject_channels),['x', 'y', 'z']].to_numpy())
+        # Extract the MNI coordinates
+        for ch in subject_channels:
+            mni_coords[f"{subject}-{ch}"] = np.squeeze(
+                coordinates_df.loc[coordinates_df['name'] == ch, ['x', 'y', 'z']].to_numpy())
 
-    # Create the montage:
-    montage = mne.channels.make_dig_montage(ch_pos=mni_coords,
-                                            coord_frame='mni_tal')
-    # Make sure that the channel types are in lower case:
+    # Create the montage
+    montage = mne.channels.make_dig_montage(ch_pos=mni_coords, coord_frame='mni_tal')
+
+    # Ensure channel types are in lowercase
     channels_types = {ch: channels_types[ch].lower() for ch in channels_types}
+
     # Add the MNI fiducials
     montage.add_mni_fiducials(fsaverage_dir)
-    # In mne-python, plotting electrodes on the brain requires some additional info about the channels:
+
+    # Create the info object with channel names and types
     info = mne.create_info(ch_names=channels, ch_types=list(channels_types.values()), sfreq=100)
-    # Add the montage:
+
+    # Set the montage for the info object
     info.set_montage(montage)
 
     return info
