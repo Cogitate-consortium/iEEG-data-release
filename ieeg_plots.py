@@ -35,9 +35,10 @@ mne.datasets.fetch_fsaverage(subjects_dir=ev.fs_directory, verbose=None)
 subjects_df = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')
 subjects = subjects_df["participant_id"].to_list()
 # Further specify the data to use from the subjects:
-session = "V1"
+session = "1"
 datatype = "ieeg"
 task = "Dur"
+atlas = "destrieux"
 save_path = Path("coverage_plots")
 if not os.path.isdir(save_path):
     os.makedirs(save_path)
@@ -65,24 +66,18 @@ for i, subject in enumerate(subjects):
 
     # ===================================================================
     # Handle electrodes:
+
+    # Extract the montage:
     montage = raw.get_montage()
-    ch_pos = montage.get_positions()['ch_pos']
-    montage = mne.channels.make_dig_montage(ch_pos=ch_pos, coord_frame="mri")
-    raw.set_montage(montage, on_missing="warn")
-
-    # Convert the montage to mri:
-
-    # Extract anatomical labels:
-    labels, _ = mne.get_montage_volume_labels(montage, subject, subjects_dir=ev.fs_directory, aseg="aparc.a2009s+aseg")
-    labels_df.append(pd.concat([pd.DataFrame({
-        "channel": "-".join([subject, ch]),
-        "region": "/".join(labels[ch])
-    }, index=[ind])
-        for ind, ch in enumerate(labels.keys())]))
-    # Convert mri to mni using talairach transform
-    mni_montage = mri_2_mni(montage, subject, ev.fs_directory)
+    mni_montage = montage.get_positions()['ch_pos']
     mni_montage = {"-".join([subject, key]): val for key, val in mni_montage.items()}
     mni_coords.update(mni_montage)
+
+    # Load the anatomical labels:
+    labels_file = Path(bids_path.directory, 'sub-{}_ses-{}_atlas-{}_labels.tsv'.format(subject.split("-")[1],
+                       session, atlas))
+    subject_labels = pd.read_csv(labels_file, sep='\t')
+    labels_df.append(subject_labels)
 
     # =================================
     # Get the lateralization
@@ -209,7 +204,7 @@ labels_df = pd.concat(labels_df).reset_index(drop=True)
 # For each channel, keep the first label that is not unknown:
 labels_list = [
     next((part for part in s.split('/') if part not in ["Unknown"]), "Unknown")
-    for s in labels_df["region"].to_list()
+    for s in labels_df["region"].to_list() if not pd.isna(s)
 ]
 # Remove all the non-cortical labels:
 labels_list = [lbl for lbl in labels_list if 'ctx_' in lbl]
@@ -250,7 +245,7 @@ for i, ori in enumerate(orientations.values()):
 # Create a separate color bar:
 cts = Counter(labels_list)
 norm = Normalize(vmin=min(list(cts.values())), vmax=max(list(cts.values())))
-cmap = plt.cm.Reds
+cmap = plt.cm.RdYlBu_r
 # Create a figure and a set of subplots
 fig, ax = plt.subplots(figsize=(1, 4))
 fig.subplots_adjust(right=0.5)
