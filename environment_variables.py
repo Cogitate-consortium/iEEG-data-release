@@ -1,3 +1,11 @@
-# Directories parameters
+from pathlib import Path
+
+# Parameters to adjust: 
 bids_root = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\bids-curate"
-fs_directory = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\bids-curate\derivatives\fs"
+fs_directory = Path(bids_root, 'derivatives', 'fs')
+
+# ===============================================================
+# Don't touch
+# xnat parameters:
+xnat_host = 'xnat-curate'
+xnat_project = 'COG_IEEG_EXP1_BIDS_SAMPLE'
