@@ -1309,14 +1309,10 @@ def get_roi_channels(channels, rois, bids_path, atlas):
     """
 
     # Load the atlas of that particular subject:
-    atlas_file = Path(bids_path.root, 'derivatives', 'preprocessing',
+    atlas_file = Path(bids_path.root,
                       'sub-' + bids_path.subject, 'ses-' + bids_path.session, bids_path.datatype,
-                      'atlas_mapping', 'broadband',
-                      'sub-{}_ses-{}_task-{}_desc-atlas_mapping_{}-{}mapping.csv'.format(bids_path.subject,
-                                                                                         bids_path.session,
-                                                                                         bids_path.task,
-                                                                                         bids_path.datatype, atlas))
-    atlas_df = pd.read_csv(atlas_file, sep=',')
+                      f'sub-{bids_path.subject}_ses-{bids_path.session}_atlas-{atlas}_labels.tsv')
+    atlas_df = pd.read_csv(atlas_file, sep='\t')
     # Loop through each channel:
     roi_channels = []
     for channel in channels:
