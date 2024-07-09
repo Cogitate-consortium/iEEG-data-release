@@ -9,7 +9,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn import svm
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif
-from mne.decoding import (GeneralizingEstimator, cross_val_multiscore, get_coef, LinearModel)
+from mne.decoding import (GeneralizingEstimator, cross_val_multiscore)
 
 from HelperFunctions import baseline_scaling
 import environment_variables as ev

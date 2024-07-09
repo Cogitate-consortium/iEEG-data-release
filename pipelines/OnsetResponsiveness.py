@@ -1,8 +1,6 @@
 import json
 import os
 from pathlib import Path
-
-import scipy
 import pandas as pd
 import numpy as np
 import mne
