@@ -57,7 +57,7 @@ def subject_report_html(subject_id):
 
 if __name__ == "__main__":
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
-    subjects = ["CF102"]
+    subjects = ["CF102", "CE103"]
     # Download the data if necessary:
     xnat_download(['sub-' + sub for sub in subjects], overwrite=False)
     for subject in subjects:

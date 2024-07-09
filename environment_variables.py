@@ -1,7 +1,7 @@
 from pathlib import Path
 
 # Parameters to adjust: 
-bids_root = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\bids-curate"
+bids_root = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\bids-xnat"
 fs_directory = Path(bids_root, 'derivatives', 'fs')
 
 # ===============================================================
