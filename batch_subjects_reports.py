@@ -6,6 +6,11 @@ import papermill as pm
 from nbconvert import HTMLExporter
 import nbformat
 import shutil
+import sys
+# Add the parent directory to sys.path
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
+from xnat_utilities import xnat_download
 
 
 def copy_images(src, dst):
@@ -52,9 +57,12 @@ def subject_report_html(subject_id):
 
 if __name__ == "__main__":
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
+    subjects = ["CF102"]
+    # Download the data if necessary:
+    xnat_download(['sub-' + sub for sub in subjects], overwrite=False)
     for subject in subjects:
         print(subject)
         try:
-            subject_report_html(subject.split("-")[1])
+            subject_report_html(subject)
         except:
             print("WARNING: The notebook could not be generated for sub-" + subject)
