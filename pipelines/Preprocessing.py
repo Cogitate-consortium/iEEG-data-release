@@ -1,7 +1,12 @@
 import json
 import mne
 import os
+import sys
+# Add the parent directory to sys.path
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
 
+from xnat_utilities import xnat_download
 from pathlib import Path
 from mne_bids import BIDSPath, read_raw_bids
 from HelperFunctions import (notch_filtering,
@@ -60,13 +65,15 @@ def preprocessing(param, subjects):
     print("=" * 80)
     print("Welcome to preprocessing!")
     print("The following subjects will now be preprocessed: ")
-    print(subjects)
     if not isinstance(param, dict):
         print("Using the config file:")
         print(param)
     print("It may take some time, count roughly 5-10min per subject!")
     if isinstance(subjects, str):
         subjects = [subjects]
+    print(subjects)
+    # Downloading the subjects if needed:
+    xnat_download(['sub-' + sub for sub in subjects], overwrite=False)
 
     # ======================================================================================================
     # Looping through each subject:
@@ -538,12 +545,12 @@ def preprocessing(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"preprocessing_config-default.json"
+    config_file = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\pipelines\preprocessing_config-default.json"
     import pandas as pd
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
-    subjects = ["sub-CF102", "sub-CF104", "sub-CF105", "sub-CF106"]
+    subjects = ["CF102"] # , "CF104", "CF105", "CF106"]
     for sub in subjects:
         try:
-            preprocessing(config_file, [sub.split("-")[1]])
+            preprocessing(config_file, sub)
         except:
             print("WARNING: PREPROCESSING FAILED FOR SUB-" + sub)
