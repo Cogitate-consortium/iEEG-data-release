@@ -1,6 +1,7 @@
 import xnat
 import sys
 import os
+import getpass
 import shutil
 import os.path as op
 from environment_variables import bids_root, xnat_host, xnat_project
@@ -53,8 +54,7 @@ def xnat_download(subjects_to_download, overwrite=False):
     # Loop to prompt for username and password until successful login
     while True:
         user = input("Enter your XNAT user name: ")
-        password = input("Enter your XNAT password: ")
-        
+        password = getpass.getpass("Enter your XNAT password: ")
         try:
             session = xnat.connect(f'https://{xnat_host}.ae.mpg.de', user=user, password=password)
             break  # Exit the loop if the connection is successful
@@ -73,7 +73,7 @@ def xnat_download(subjects_to_download, overwrite=False):
         proj_bids_root = op.join(bids_root, xnat_project, 'resources', 'bids', 'files')
         project.resources['bids'].download_dir(bids_root)
         move_dir_contents(proj_bids_root, bids_root)
-        shutil.rmtree(op.join(bids_root, xnat_project, 'resources'))
+        shutil.rmtree(op.join(bids_root, xnat_project))
     else:
         print(f'The project data of {xnat_project} are already present on your computer.')
         print(f'Set overwrite to true if you wish to overwrite them.')
@@ -95,7 +95,7 @@ def xnat_download(subjects_to_download, overwrite=False):
         if overwrite or not os.path.isdir(op.join(bids_root, subject)):
             session.projects.get(xnat_project).subjects.get(subject).resources['bids'].download_dir(bids_root)
             move_dir_contents(subj_bids_root, bids_root)
-            shutil.rmtree(op.join(bids_root, subject))
+            shutil.rmtree(subj_bids_root)
         else:
             print(f'The project data of subject {subject} are already present on your computer.')
             print(f'Set overwrite to true if you wish to overwrite them.')
