@@ -1,8 +1,9 @@
-""" This script contains all helper function for the preprocessing pipeline
-    authors: Alex Lepauvre and Katarina Bendtz
-    alex.lepauvre@ae.mpg.de
-    katarina.bendtz@tch.harvard.edu
-    Dec 2020
+"""
+This script contains all helper functions for the preprocessing pipeline
+Authors: Alex Lepauvre and Katarina Bendtz
+alex.lepauvre@ae.mpg.de
+katarina.bendtz@tch.harvard.edu
+Dec 2020
 """
 
 import os
@@ -30,10 +31,12 @@ mne.set_log_level(verbose='WARNING')
 
 def detrend_runs(raw, njobs=1):
     """
-    This function detrends the run. If the raw initially consisted of several files that were concatenated, the
-    deterending will be performed separately for each run. Otherwise, it will done in one go.
-    :param raw: (mne raw object)
-    :param njobs: (int)
+    Detrend the run. If the raw data initially consisted of several files that were concatenated, 
+    the detrending will be performed separately for each run. Otherwise, it will be done in one go.
+
+    :param raw: mne raw object
+    :param njobs: int, number of jobs to use for detrending
+    :return: detrended mne raw object
     """
     # Check whether there are any annotations marking the merging:
     if len(np.where(raw.annotations.description == "BAD boundary")[0]) > 0:
@@ -86,12 +89,13 @@ def detrend_runs(raw, njobs=1):
 
 def get_cmap_rgb_values(values, cmap=None, center=None):
     """
-    This function takes in a list of values and returns a set of RGB values mapping onto a specified color bar. If a
-    midpoint is set, the color bar will be normalized accordingly.
-    :param values: (list of floats) list of values for which to obtain a color map
-    :param cmap: (string) name of the colormap
-    :param center: (float) values on which to center the colormap
-    return: colors (list of rgb triplets) color for each passed value
+    Get RGB values for a list of values mapping onto a specified color bar. If a midpoint is set, 
+    the color bar will be normalized accordingly.
+
+    :param values: list of floats, list of values for which to obtain a color map
+    :param cmap: string, name of the colormap
+    :param center: float, value on which to center the colormap
+    :return: list of rgb triplets, color for each passed value
     """
     if cmap is None:
         cmap = "RdYlBu_r"
@@ -107,9 +111,10 @@ def get_cmap_rgb_values(values, cmap=None, center=None):
 
 def path_generator(directory):
     """
-    This function generates a folder if it doesn't exists
-    :param directory: (string or pathlib path object) folder to create
-    :return:
+    Generate a folder if it doesn't exist.
+
+    :param directory: string or pathlib path object, folder to create
+    :return: directory path
     """
     #
     if not os.path.isdir(directory):
@@ -121,16 +126,14 @@ def path_generator(directory):
 
 def save_param(param, save_path, step, signal, file_prefix, file_extension):
     """
-    This function saves the configs that was used to generate the data. It saves both the entire config file and the one
-    specific to the particular step
-    :param param: (dictionary) copy of the parameters used to generate the data. Always saving
-    it alongside the data to always know what happened to them
-    :param save_path: (path string of path object) path to where the data should be saved
-    :param step: (string) name of the preprocessing step, saving the data in a separate folder
-    :param signal: (string) name of the signal we are saving
-    :param file_prefix: (string) prefix of the file to save. We follow the convention to have
-    the subject ID, the session and the task.
-    :param file_extension: (string) file name extension
+    Save the configuration parameters used to generate the data.
+
+    :param param: dictionary, parameters used to generate the data
+    :param save_path: string or path object, path to where the data should be saved
+    :param step: string, name of the preprocessing step
+    :param signal: string, name of the signal being saved
+    :param file_prefix: string, prefix of the file to save
+    :param file_extension: string, file name extension
     """
     # Saving the config of this particular step:
     config_file_name = Path(save_path, '{}_desc-{}_ieeg{}.json'.format(file_prefix, step,
@@ -146,20 +149,18 @@ def save_param(param, save_path, step, signal, file_prefix, file_extension):
     return None
 
 
-def mne_data_saver(data, param, save_root, step, signal, file_prefix,
-                   file_extension="-raw.fif"):
+def mne_data_saver(data, param, save_root, step, signal, file_prefix, file_extension="-raw.fif"):
     """
-    This function saves the different instances of mne objects
-    :param data: (mne object: epochs, evoked, raw...) data to be saved
-    :param param: (dictionary) copy of the parameters used to generate the data. Always saving
-    it alongside the data to always know what happened to them
-    :param save_root: (path string of path object) path to where the data should be saved
-    :param step: (string) name of the preprocessing step, saving the data in a separate folder
-    :param signal: (string) name of the signal we are saving
-    :param file_prefix: (string) prefix of the file to save. We follow the convention to have
-    the subject ID, the session and the task.
-    :param file_extension: (string) file name extension
-    :return:
+    Save different instances of MNE objects.
+
+    :param data: mne object (epochs, evoked, raw...), data to be saved
+    :param param: dictionary, parameters used to generate the data
+    :param save_root: string or path object, path to where the data should be saved
+    :param step: string, name of the preprocessing step
+    :param signal: string, name of the signal being saved
+    :param file_prefix: string, prefix of the file to save
+    :param file_extension: string, file name extension
+    :return: None
     """
     print("-" * 40)
     print("Saving mne object")
@@ -180,19 +181,17 @@ def mne_data_saver(data, param, save_root, step, signal, file_prefix,
 def plot_channels_psd(raw, save_root, step, signal, file_prefix,
                       file_extension="-psd.png", plot_single_channels=False, channels_type=None):
     """
-    This function plots and saved the psd of the chosen electrodes. There is also the option to plot each channel
-    separately
-    :param raw: (mne raw object)
-    :param save_root: (path string of path object) path to where the data should be saved
-    :param step: (string) name of the preprocessing step, saving the data in a separate folder
-    :param signal: (string) name of the signal we are saving
-    :param file_prefix: (string) prefix of the file to save. We follow the convention to have
-    the subject ID, the session and the task.
-    :param file_extension: (string) file name extension
-    :param plot_single_channels: (boolean) whether to plot single channels or only all of
-    them superimposed
-    :param channels_type: (dict) list of the channels of interest
-    :return:
+    Plot and save the power spectral density (PSD) of chosen electrodes.
+
+    :param raw: mne raw object
+    :param save_root: string or path object, path to where the data should be saved
+    :param step: string, name of the preprocessing step
+    :param signal: string, name of the signal being saved
+    :param file_prefix: string, prefix of the file to save
+    :param file_extension: string, file name extension
+    :param plot_single_channels: boolean, whether to plot single channels or only all of them superimposed
+    :param channels_type: dict, list of the channels of interest
+    :return: None
     """
     # Getting  the relevant channels:
     if channels_type is None:
@@ -228,17 +227,17 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
 def plot_bad_channels(raw, save_root, step, signal, file_prefix,
                       file_extension="bads.png", plot_single_channels=False, picks="bads"):
     """
-    This function plots the bad channels psd and raw signal to show what it being disarded:
-    :param raw: (mne raw object)
-    :param save_root: (path string of path object) path to where the data should be saved
-    :param step: (string) name of the preprocessing step, saving the data in a separate folder
-    :param signal: (string) name of the signal we are saving
-    :param file_prefix: (string) prefix of the file to save. We follow the convention to have
-    the subject ID, the session and the task.
-    :param file_extension: (string) file name extension
-    :param plot_single_channels: (boolean) whether or not to plot single channels or only all of them superimposed
-    :param picks: (list) list of the channels of interest
-    :return:
+    Plot the bad channels PSD and raw signal to show what is being discarded.
+
+    :param raw: mne raw object
+    :param save_root: string or path object, path to where the data should be saved
+    :param step: string, name of the preprocessing step
+    :param signal: string, name of the signal being saved
+    :param file_prefix: string, prefix of the file to save
+    :param file_extension: string, file name extension
+    :param plot_single_channels: boolean, whether to plot single channels or only all of them superimposed
+    :param picks: list, list of the channels of interest
+    :return: None
     """
     # Handling picks input:
     if picks == "bads":
@@ -308,15 +307,13 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
 
 def custom_car(raw, reference_channel_types=None, target_channel_types=None):
     """
-    This function takes specific channel types as reference and averages the amplitude across them along time. This mean
-    time series is then substract from, all the channels at each time points.
-    :param raw: (mne raw object) contains the data to be rereferenced
-    :param reference_channel_types: (dict) dictionary specifying the channels types to be take as reference, as well as
-    which to exclude. See mne documentation for mne.pick_types to know what you can pass here
-    :param target_channel_types: (dict) dictionary specifying the channels types to apply reference to, as well as
-    which to exclude. See mne documentation for mne.pick_types to know what you can pass here
-    :return: raw: (mne raw object) modified instance of the mne object. Note that the data are modified in place, so
-    use copy upon calling this function to avoid overwriting things
+    Compute a custom common average reference (CAR) by averaging the amplitude across specific channel types and 
+    subtracting it from all channels at each time point.
+
+    :param raw: mne raw object, contains the data to be rereferenced
+    :param reference_channel_types: dict, specifying the channels types to take as reference
+    :param target_channel_types: dict, specifying the channels types to apply reference to
+    :return: mne raw object, modified instance of the mne object
     """
     # Handling empty input:
     if reference_channel_types is None:
@@ -344,17 +341,17 @@ def custom_car(raw, reference_channel_types=None, target_channel_types=None):
 def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_type="fir",
                     cutoff_lowpass_bw=None, cutoff_highpass_bw=None, channel_types=None):
     """
-    This function filters the raw data according to the set parameters
-    :param raw: (mne raw object) continuous data
-    :param njobs: (int) number of jobs to preprocessing the filtering in parallel threads
-    :param frequency: (int or float) frequency to notch out.
-    :param remove_harmonics: (boolean) whether or not to remove all the harmonics of the declared freq (up until the
-    sampling freq)
-    :param filter_type: (string) what type of filter to use, iir or fir
-    :param cutoff_lowpass_bw: (float) frequency for low pass (only used if type is iir)
-    :param cutoff_highpass_bw: (float) frequency for high pass (only used if type is iir)
-    :param channel_types: (dict) type of channels to notch filter, boolean for the channel types
-    :return:
+    Filter the raw data according to the set parameters.
+
+    :param raw: mne raw object, continuous data
+    :param njobs: int, number of jobs to preprocess the filtering in parallel threads
+    :param frequency: int or float, frequency to notch out
+    :param remove_harmonics: boolean, whether or not to remove all the harmonics of the declared frequency
+    :param filter_type: string, type of filter to use, "iir" or "fir"
+    :param cutoff_lowpass_bw: float, frequency for low pass (only used if type is iir)
+    :param cutoff_highpass_bw: float, frequency for high pass (only used if type is iir)
+    :param channel_types: dict, type of channels to notch filter, boolean for the channel types
+    :return: mne raw object
     """
     # ------------------------------------------------------------------------------------------------------------------
     # Filtering the data:
@@ -398,16 +395,12 @@ def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_ty
 
 def create_metadata_from_events(epochs, metadata_column_names):
     """
-    This function parses the events found in the epochs descriptions to create the meta data. The column of the meta
-    data are generated based on the metadata column names. The column name must be a list in the same order as the
-    strings describing the events. The name of the column must be the name of the overall condition, so say the
-    specific column describes the category of the presented stim (faces, objects...), then the column should be called
-    category. This will become obsolete here at some point, when the preprocessing is changed to generate the meta data
-    directly
-    :param epochs: (mne epochs object) epochs for which the meta data will be generated
-    :param metadata_column_names: (list of strings) name of the column of the meta data. Must be in the same order
-    as the events description + must be of the same length as the number of word in the events description
-    :return: epochs (mne epochs object)
+    Parse the events found in the epochs descriptions to create the metadata. The columns of the metadata are generated 
+    based on the metadata column names.
+
+    :param epochs: mne epochs object, epochs for which the metadata will be generated
+    :param metadata_column_names: list of strings, name of the columns of the metadata
+    :return: mne epochs object with added metadata
     """
 
     # Getting the event description of each single trial
@@ -440,31 +433,19 @@ def create_metadata_from_events(epochs, metadata_column_names):
 def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_not_to_epoch=None,
              baseline=(None, 0.0), reject_by_annotation=True, meta_data_column=None):
     """
-    This function performs the epoching according to a few parameters
-    :param raw: (mne raw object) data to epochs
-    :param events: (mne events numpy array) three cols, one for event time stamp, the other for the event ID. This
-    is what you get out from the mne functions to extract the events
-    :param events_dict: (dict) mapping between the events ID and their descriptions
-    :param picks: (string or list of int or list of strings) channels to epochs. If you pass all, it will select all the
-    channels found in the raw object
-    :param tmin: (float) how long before each event of interest to epochs. IN SECONDS!!!
-    :param tmax: (float) how long before each event of interest to epochs. IN SECONDS!!!
-    :param events_not_to_epoch: (list of strings) name of the events not to epochs. This is more handy than passing
-    all the ones we want to epochs, because usually there are more events you are interested about than events you are
-    not interested about
-    :param baseline: (tuple of floats) passed to the mne epoching function to apply baseline correction and what is
-    defined as the baseline
-    :param reject_by_annotation: (boolean) whether or not to discard trials based on annotations that were made
-    previously
-    :param meta_data_column: (list of strings) list of the column names of hte metadata. The metadata are generated
-    by parsing the extensive trial description you might have as events. For example, if you have something like this:
-    Face/short/left, the meta data generator will create a table:
-    col1  | col2  | col3
-    Face    short   left
-    The list you pass is the name of the different columns. So you would pass: ["category", "duration", "position"]:
-    category  | duration  | position
-    Face         short        left
-    :return:
+    Perform epoching according to the provided parameters.
+
+    :param raw: mne raw object, data to epoch
+    :param events: mne events numpy array, three columns: event time stamp, event ID
+    :param events_dict: dict, mapping between the events ID and their descriptions
+    :param picks: string or list of int or list of strings, channels to epoch
+    :param tmin: float, how long before each event of interest to epoch (in seconds)
+    :param tmax: float, how long after each event of interest to epoch (in seconds)
+    :param events_not_to_epoch: list of strings, name of the events not to epoch
+    :param baseline: tuple of floats, passed to the mne epoching function to apply baseline correction
+    :param reject_by_annotation: boolean, whether or not to discard trials based on annotations
+    :param meta_data_column: list of strings, list of the column names of the metadata
+    :return: mne epochs object
     """
     if picks == "all":
         picks = raw.info["ch_names"]
@@ -505,17 +486,14 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
     is then normalized by dividing by the mean amplitude over the entire time series (within each channel separately).
     The amplitude is then averaged across frequency bins. This follows the approach described here:
     https://www.nature.com/articles/s41467-019-12623-6#Sec10
-    This function computes the envelope in specified frequency band. It further has the option to compute envelope
-    in specified bands within the passed frequency to then do baseline normalization to account for 1/f noise.
-    :param raw: (mne raw object) raw mne object containing our raw signal
-    :param frequency_range: (list of list of floats) frequency of interest
-    :param bands_width: (float or int) width of the frequency bands to loop overs
-    :param njobs: (int) number of parallel processes to compute the high gammas
-    :param channel_types: (dict) name of the channels for which the high gamma should be computed. This is important
-    to avoid taking in electrodes which we might not want
-    :param do_baseline_normalization: (bool) whether to do baseline normalization
-    :return: frequency_band_signal: (mne raw object) dictionary containing raw objects with high gamma in the different
-    frequency bands
+
+    :param raw: mne raw object, raw signal
+    :param frequency_range: list of list of floats, frequency of interest
+    :param bands_width: float or int, width of the frequency bands to loop over
+    :param njobs: int, number of parallel processes to compute the high gammas
+    :param channel_types: dict, name of the channels for which the high gamma should be computed
+    :param do_baseline_normalization: bool, whether to do baseline normalization
+    :return: mne raw object, dictionary containing raw objects with high gamma in the different frequency bands
     """
 
     def divide_by_average(data):
@@ -615,16 +593,14 @@ def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types
 
 def compute_erp(raw, frequency_range=None, njobs=1, channel_types=None, **kwargs):
     """
-    The erp computation consist in low passing the raw signal to extract only low freq signal.
-    :param raw: (mne raw object) raw mne object containing our raw signal
-    :param frequency_range: (list of list of floats) frequency of interest
-    :param njobs: (int) number of parallel processes to compute the high gammas
-    :param channel_types: (dict) type of channel for which the ERP should be computed. It should be of the format:
-    {ecog: True, seeg: True...}
-    :param kwargs: arguments that can be passed to the mne raw.filter function. Check this page to find the options:
-    https://mne.tools/stable/generated/mne.io.Raw.html#mne.io.Raw.filter
-    :return: erp_raw: (mne raw object) computed erp signal
-    frequency bands
+    Compute the event-related potential (ERP) by low-pass filtering the raw signal.
+
+    :param raw: mne raw object, raw signal
+    :param frequency_range: list of list of floats, frequency of interest
+    :param njobs: int, number of parallel processes to compute the ERP
+    :param channel_types: dict, type of channel for which the ERP should be computed
+    :param kwargs: arguments that can be passed to the mne raw.filter function
+    :return: mne raw object, computed ERP signal
     """
     if channel_types is None:
         channel_types = {"seeg": True, "ecog": True}
@@ -643,10 +619,11 @@ def compute_erp(raw, frequency_range=None, njobs=1, channel_types=None, **kwargs
 
 def add_fiducials(montage, fs_directory, subject_id):
     """
-    This function add the estimated fiducials to the montage and compute the transformation
-    :param montage: (mne raw object) data to which the fiducials should be added
-    :param fs_directory: (path string) path to the freesurfer directory
-    :param subject_id: (string) name of the subject
+    Add the estimated fiducials to the montage and compute the transformation.
+
+    :param montage: mne raw object, data to which the fiducials should be added
+    :param fs_directory: path string, path to the freesurfer directory
+    :param subject_id: string, name of the subject
     :return: mne raw object and transformation
     """
     # If the coordinates are in mni_tal coordinates:
@@ -673,20 +650,20 @@ def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, s
                                 file_extension='-loc.png', channels_to_plot=None,
                                 plot_elec_name=False):
     """
-    This function plots and saved the psd of the chosen electrodes.
-    :param mne_object: (mne object: raw, epochs, evoked...) contains the mne object with the channels info
-    :param subject: (string) subject ID
-    :param fs_dir: (string or path object) freesurfer directory containing the subject's data
-    :param param: (dict) contains analysis parameters
-    :param save_root: (string) directory to save the figures
-    :param step: (string) name of the analysis step for saving the parameters.
-    :param signal: (string) name of the signal
-    :param file_prefix: (string) prefix for file saving
-    :param file_extension: (string) ending of the file name
-    :param channels_to_plot: (list) contains the different channels to plot. Can pass list of channels types, channels
-    indices, channels names...
-    :param plot_elec_name: (string) whethre or not to print the electrodes names onto the snapshot!
-    :return:
+    Plot and save the electrode localization.
+
+    :param mne_object: mne object (raw, epochs, evoked...), contains the mne object with the channels info
+    :param subject: string, subject ID
+    :param fs_dir: string or path object, freesurfer directory containing the subject's data
+    :param param: dict, contains analysis parameters
+    :param save_root: string, directory to save the figures
+    :param step: string, name of the analysis step for saving the parameters
+    :param signal: string, name of the signal
+    :param file_prefix: string, prefix for file saving
+    :param file_extension: string, ending of the file name
+    :param channels_to_plot: list, contains the different channels to plot
+    :param plot_elec_name: string, whether or not to print the electrodes names onto the snapshot
+    :return: None
     """
     if channels_to_plot is None:
         channels_to_plot = ["ecog", "seeg"]
@@ -759,22 +736,19 @@ def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, s
 def roi_mapping(mne_object, list_parcellations, subject, fs_dir, param, save_root, step, signal, file_prefix,
                 file_extension='mapping.csv'):
     """
-    This function maps the electrodes on different atlases. You can pass whatever atlas you have the corresponding
-    free surfer parcellation for.
-    :param mne_object: (mne raw or epochs object) object containing the montage to extract the roi
-    :param list_parcellations: (list of string) list of the parcellation files to use to do the mapping. Must match the
-    naming of the free surfer parcellation files.
-    :param subject: (string) name of the subject to do access the fs recon
-    :param fs_dir: (string or pathlib path object) path to the freesurfer directory containing all the participants
-    :param param: (dictionary) copy of the parameters used to generate the data. Always saving
-    it alongside the data to always know what happened to them
-    :param save_root: (path string of path object) path to where the data should be saved
-    :param step: (string) name of the preprocessing step, saving the data in a separate folder
-    :param signal: (string) name of the signal we are saving
-    :param file_prefix: (string) prefix of the file to save. We follow the convention to have
-    the subject ID, the session and the task.
-    :param file_extension: (string) file name extension
-    :return: labels_df: (dict of dataframe) one data frame per parcellation with the mapping between roi and channels
+    Map the electrodes on different atlases.
+
+    :param mne_object: mne raw or epochs object, object containing the montage to extract the roi
+    :param list_parcellations: list of string, list of the parcellation files to use for the mapping
+    :param subject: string, name of the subject to access the fs recon
+    :param fs_dir: string or path object, path to the freesurfer directory containing all the participants
+    :param param: dictionary, parameters used to generate the data
+    :param save_root: string or path object, path to where the data should be saved
+    :param step: string, name of the preprocessing step
+    :param signal: string, name of the signal being saved
+    :param file_prefix: string, prefix of the file to save
+    :param file_extension: string, file name extension
+    :return: dict of dataframes, one dataframe per parcellation with the mapping between roi and channels
     """
 
     # Generate the root path to save the data:
@@ -827,14 +801,13 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, param, save_roo
 
 def description_ch_rejection(raw, bids_path, channels_description, discard_bads=True):
     """
-    This function enables to discard channels based on the descriptions found in the _channel.tsv file in the bids.
-    A string or list of strings must be passed to be compared to the content of the _channel file to discard those
-    matching
-    :param raw: (mne_raw object) contains the data and channels to investigate
-    :param bids_path: (mne_bids object) path to the _channel.tsv file
-    :param channels_description: (str or list) contain the channels descriptions to set as bad channels.
-    :param discard_bads: (boolean) whether or not to discard the channels that were marked as bads as well
-    :return:
+    Discard channels based on the descriptions found in the _channel.tsv file in the BIDS dataset.
+
+    :param raw: mne raw object, contains the data and channels to investigate
+    :param bids_path: mne_bids BIDSPath object, path to the _channel.tsv file
+    :param channels_description: str or list, channels descriptions to set as bad channels
+    :param discard_bads: boolean, whether or not to discard the channels that were marked as bad
+    :return: tuple (mne raw object, list of bad channels)
     """
     if isinstance(channels_description, str):
         channels_description = [channels_description]
@@ -868,12 +841,11 @@ def description_ch_rejection(raw, bids_path, channels_description, discard_bads=
 
 def laplace_mapping_validator(mapping, data_channels):
     """
-    This function checks the mapping against the channels found in the data. If things don't add up, raise an error
-    :param mapping: (dict) contains the mapping between channels to reference and which channels to use to do the
-    reference. Format: {ch_name: {"ref_1": ch, "ref_2": ch or None}}
-    :param data_channels: (list of string) list of the channels found in the data. This is used to control that all
-    the channels found in the mapping are indeed found in the data, to avoid issues down the line
-    :return:
+    Check the mapping against the channels found in the data. Raise an error if there are inconsistencies.
+
+    :param mapping: dict, contains the mapping between channels to reference and which channels to use for the reference
+    :param data_channels: list of string, list of the channels found in the data
+    :return: None
     """
     if not all([channel in data_channels for channel in mapping.keys()]) \
             or not all([mapping[channel]["ref_1"] in data_channels or mapping[channel]["ref_1"] is None
@@ -900,18 +872,13 @@ def laplace_mapping_validator(mapping, data_channels):
 
 def remove_bad_references(reference_mapping, bad_channels, all_channels):
     """
-    The reference mapping in the mapping file is agnostic to which channels are bad, it is only based on the grid
-    and strips organization. This function integrates the bad channels information to the mapping. With laplace mapping,
-    there are two cases in which a channel should be rejected: if the channel being referenced is bad or if both
-    reference channels are bad. This channels identifies these cases and updates the mapping such that those channels
-    are excluded. Note that in the case where only one of the two reference is bad but not the other, only the other
-    will be used, reducing to a bipolar.
-    Additionally, if some of the channels found in the data are not found in the mapping, the data can
-    be set as bad if the discard_no_ref_channels is set to True
-    :param reference_mapping: (dict) contain for each channel the reference channel according to our scheme
-    :param bad_channels: (string list) list of the channels that are marked as bad
-    :param all_channels: (string list) list of all the channels
-    :return:
+    Integrate bad channels information to the reference mapping. Update the mapping such that channels with bad 
+    references are excluded.
+
+    :param reference_mapping: dict, contain for each channel the reference channel according to the scheme
+    :param bad_channels: string list, list of the channels that are marked as bad
+    :param all_channels: string list, list of all the channels
+    :return: tuple (new_reference_mapping, new_bad_channels)
     """
     new_reference_mapping = reference_mapping.copy()
     # Looping through each channel to reference to combine bad channels information:
@@ -966,13 +933,10 @@ def laplace_ref_fun(to_ref, ref_1=None, ref_2=None):
     G2 ..........     G1 ..............       G3 ..............
     G3 ..........     G2 ..............       G4 ..............
     ]                 ]                       ]
-    Otherwise, you would be referencing  wrong triplets!
-    :param to_ref: (numpy array) contains the data to reference.
-    :param ref_1: (numpy array) Contains the first ref to do the reference (the ref_1 in mean(ref_1, ref_2)). Dimension
-    must match to_ref
-    :param ref_2: (numpy array) Contains the second ref to do the reference (the ref_2 in mean(ref_1, ref_2)). Dimension
-    must match to_ref
-    :return: referenced_data (numpy array) data that were referenced
+    :param to_ref: numpy array, contains the data to reference
+    :param ref_1: numpy array, contains the first ref to do the reference
+    :param ref_2: numpy array, contains the second ref to do the reference
+    :return: numpy array, referenced data
     """
     # Check that the sizes match:
     if not to_ref.shape == ref_1.shape == ref_2.shape:
@@ -984,11 +948,12 @@ def laplace_ref_fun(to_ref, ref_1=None, ref_2=None):
 
 def project_elec_to_surf(raw, subjects_dir, subject):
     """
-    This function project surface electrodes onto the brain surface to avoid having them floating a little.
-    :param raw: (mne raw object)
-    :param subjects_dir: (path or string) path to the freesurfer subject directory
-    :param subject: (string) name of the subject
-    :return:
+    Project surface electrodes onto the brain surface to avoid having them floating.
+
+    :param raw: mne raw object
+    :param subjects_dir: path or string, path to the freesurfer subject directory
+    :param subject: string, name of the subject
+    :return: mne raw object
     """
     # Loading the left and right pial surfaces:
     if raw.get_montage().get_positions()['coord_frame'] == "mri":
@@ -1057,7 +1022,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
                           n_jobs=1, relocate_edges=True,
                           subjects_dir=None, subject=None):
     """
-    This function performs laplacian referencing by subtracting the average of two neighboring electrodes to the
+    Performs laplacian referencing by subtracting the average of two neighboring electrodes to the
     central one. So for example, if you have electrodes G1, G2, G3, you can reference G2 as G2 = G2 - mean(G1, G2).
     The user can pass a mapping in the format of a dictionary. The dictionary must have the structure:
     {
@@ -1070,18 +1035,15 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
     If the user doesn't pass a mapping, he will be given the opportunity to generate it manually through command line
     input. If no mapping exists, we recommend using the command line to generate it, as the formating is then readily
     consistent with the needs of the function. The function so far only works with raw object, not epochs nor evoked
-    :param raw: (mne raw object) contains the data to reference
-    :param reference_mapping: (dict or None) dict of the format described above or None. If None, then the user will
-    have the opportunity to create it manually
-    :param channel_types: (dict) which channel to consider for the referencing
-    :param n_jobs: (int) n_jobs to compute the mapping. Not really useful as we loop through each channel independently
-    so setting it to more than 1 will not really do anything. But might be improved in the future.
-    :param relocate_edges: (boolean) whether or not to relocate the electrodes that have only one ref!
-    :param subjects_dir: (string) directory to the freesurfer data. This is necessary, as the edges get relocated,
-    the ecog channels need to be projected to the brain surface.
-    :param subject: (string) Name of the subject to access the right surface
-    :return:
-    mne raw object: with laplace referencing performed.
+
+    :param raw: mne raw object, contains the data to reference
+    :param reference_mapping: dict or None, dict of the format described above or None
+    :param channel_types: dict, which channels to consider for the referencing
+    :param n_jobs: int, number of jobs to compute the mapping
+    :param relocate_edges: boolean, whether or not to relocate the electrodes that have only one ref
+    :param subjects_dir: string, directory to the freesurfer data
+    :param subject: string, name of the subject to access the right surface
+    :return: tuple (mne raw object, reference_mapping, bad_channels)
     """
     # Get the channels of interest.
     if channel_types is None:
@@ -1155,30 +1117,14 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
 
 def baseline_scaling(epochs, correction_method="ratio", baseline=(None, 0), picks=None, n_jobs=1):
     """
-    This function performs baseline correction on the data. The default is to compute the mean over the entire baseline
-    and dividing each data points in the entire epochs by it. Another option is to substract baseline from each time
-    point
-    :param epochs: (mne epochs object) epochs on which to perform the baseline correction
-    :param correction_method: (string) options to do the baseline correction. Options are:
-        mode : 'mean' | 'ratio' | 'logratio' | 'percent' | 'zscore' | 'zlogratio'
-        Perform baseline correction by
-        - subtracting the mean of baseline values ('mean')
-        - dividing by the mean of baseline values ('ratio')
-        - dividing by the mean of baseline values and taking the log
-          ('logratio')
-        - subtracting the mean of baseline values followed by dividing by
-          the mean of baseline values ('percent')
-        - subtracting the mean of baseline values and dividing by the
-          standard deviation of baseline values ('zscore')
-        - dividing by the mean of baseline values, taking the log, and
-          dividing by the standard deviation of log baseline values
-          ('zlogratio')
-          source: https://github.com/mne-tools/mne-python/blob/main/mne/baseline.py
-    :param baseline: (tuple) which bit to take as the baseline
-    :param picks: (None or list of int or list of strings) indices or names of the channels on which to perform the
-    correction. If none, all channels are used
-    :param n_jobs: (int) number of jobs to use to preprocessing the function. Can be ran in parallel
-    :return: none, the data are modified in place
+    Perform baseline correction on the data.
+
+    :param epochs: mne epochs object, epochs on which to perform the baseline correction
+    :param correction_method: string, options to do the baseline correction
+    :param baseline: tuple, which bit to take as the baseline
+    :param picks: None or list of int or list of strings, indices or names of the channels on which to perform the correction
+    :param n_jobs: int, number of jobs to use to preprocess the function
+    :return: None
     """
     from mne.baseline import rescale
     epochs.apply_function(rescale, times=epochs.times, baseline=baseline, mode=correction_method,
@@ -1189,8 +1135,13 @@ def baseline_scaling(epochs, correction_method="ratio", baseline=(None, 0), pick
 
 def project_montage_to_surf(montage, channel_types, subject, fs_dir):
     """
-    This function projects the electrodes to the pial surface. Note that this is only ever done on the ecog channels,
-    never on the seeg!
+    Project the electrodes to the pial surface. Note that this is only ever done on the ecog channels.
+
+    :param montage: mne DigMontage object, montage to project
+    :param channel_types: dict, dictionary specifying channel types
+    :param subject: string, name of the subject
+    :param fs_dir: path or string, path to the freesurfer directory
+    :return: mne DigMontage object, updated montage
     """
     # Read the surfaces:
     left_surf = read_geometry(str(Path(fs_dir, subject, "surf", "lh.pial")))
@@ -1237,13 +1188,13 @@ def project_montage_to_surf(montage, channel_types, subject, fs_dir):
 
 def create_montage(channels, bids_path, fsaverage_dir):
     """
-    Fetches the MNI coordinates of a set of channels. Channels must include a subject identifier
-    and a channel identifier separated by a hyphen (e.g., 'SF102-G1').
+    Fetch the MNI coordinates of a set of channels from the bids directory directly. 
 
-    :param channels: List of channel names to fetch MNI coordinates for. Must include subject and channel identifiers.
-    :param bids_path: mne_bids BIDSPath object with information to fetch coordinates.
-    :param fsaverage_dir: Path to the FreeSurfer root folder containing the fsaverage.
-    :return: mne.Info object with channel info, including positions in MNI space.
+    :param channels: list of channel names to fetch MNI coordinates for. The name of the channels must follow the naming convention:
+    $SUBID-$Channel_name, so CF102-G1 for example
+    :param bids_path: mne_bids BIDSPath object with information to fetch coordinates
+    :param fsaverage_dir: path to the FreeSurfer root folder containing the fsaverage
+    :return: mne.Info object with channel info, including positions in MNI space
     """
 
     # Extract unique subjects from the channels list
@@ -1300,12 +1251,14 @@ def create_montage(channels, bids_path, fsaverage_dir):
 
 def get_roi_channels(channels, rois, bids_path, atlas):
     """
-    This function takes in a list of channels and returns only those which are in a particular set of ROIs.
-    :param channels: (list of string) list of channels
-    :param rois: (list of strings) list of ROIs with names matching the labels of a particular atlas
-    :param bids_path: (mne bids path object)
-    :param atlas: (string) name of the atlas of interest
-    :return: channels (list of string) list of channels found within the region of interest
+    Get channels that are in a particular set of ROIs. This functions relies on the labels of each channel being found
+    in csv table located in the bids directory of each single participant.
+
+    :param channels: list of string, list of channels
+    :param rois: list of strings, list of ROIs with names matching the labels of a particular atlas
+    :param bids_path: mne bids path object
+    :param atlas: string, name of the atlas of interest
+    :return: list of string, list of channels found within the region of interest
     """
 
     # Load the atlas of that particular subject:
@@ -1337,7 +1290,12 @@ def get_roi_channels(channels, rois, bids_path, atlas):
 
 def mri_2_mni(montage, subject, fs_dir):
     """
-    Using the Talairach transform to convert the MRI coordinates to fsaverage
+    Convert MRI coordinates to MNI coordinates using the Talairach transform.
+
+    :param montage: mne DigMontage object
+    :param subject: string, subject ID
+    :param fs_dir: path or string, path to the freesurfer directory
+    :return: dict, MNI positions
     """
     # Add the fiducials: ras -> mri:
     # montage, trans = add_fiducials(montage, fs_dir, subject)
@@ -1353,6 +1311,13 @@ def mri_2_mni(montage, subject, fs_dir):
 
 
 def count_colors(values, cmap):
+    """
+    Count the number of entries for each value and map them to colors.
+
+    :param values: list of values
+    :param cmap: string, name of the colormap
+    :return: dict, mapping keys to RGB colors
+    """
     from collections import Counter
     # Count the number of entries for each values:
     counts = dict(Counter(values))
@@ -1380,7 +1345,13 @@ def count_colors(values, cmap):
 
 def exclude_distant_channels(montage, subject, fs_dir, max_dist=5):
     """
+    Exclude electrodes that are further than max_dist from the brain surface.
 
+    :param montage: mne DigMontage object
+    :param subject: string, subject ID
+    :param fs_dir: path or string, path to the freesurfer directory
+    :param max_dist: float, maximum distance from the brain surface
+    :return: mne DigMontage object, updated montage
     """
     # Load the surface file using nibabel
     # Create the file names to the directory:
@@ -1402,3 +1373,4 @@ def exclude_distant_channels(montage, subject, fs_dir, max_dist=5):
             del montage.ch_names[ch_ind]
             del montage.dig[ch_ind]
     return montage
+
