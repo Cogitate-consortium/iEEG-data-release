@@ -95,10 +95,10 @@ def xnat_download(subjects_to_download, overwrite=False):
         if overwrite or not os.path.isdir(op.join(bids_root, subject)):
             session.projects.get(xnat_project).subjects.get(subject).resources['bids'].download_dir(bids_root)
             move_dir_contents(subj_bids_root, bids_root)
-            shutil.rmtree(subj_bids_root)
+            shutil.rmtree(op.join(bids_root, subject, 'resources'))
         else:
             print(f'The project data of subject {subject} are already present on your computer.')
             print(f'Set overwrite to true if you wish to overwrite them.')
 
 if __name__ == "__main__":
-    xnat_download("sub-CE107")
+    xnat_download("sub-CF102")
