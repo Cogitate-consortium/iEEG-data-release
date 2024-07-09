@@ -1,11 +1,13 @@
 # Custom
 bids/
 bids-cogitate/
+bids-xnat/
 bids-curate/
 data_paper_figures
 data_release/
 subjects_reports/
 subjects_report_v1/
+subjects_reports_v2/
 .idea/
 coverage_plots/
 # Byte-compiled / optimized / DLL files
