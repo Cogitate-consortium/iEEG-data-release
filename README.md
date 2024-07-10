@@ -60,7 +60,7 @@ If you use any the data for other purpose, you should cite the scientific data p
 # Contributors:
 <!-- Copy-paste in your Readme.md file -->
 
-<a href = "https://github.com/Tanu-N-Prabhu/Python/graphs/contributors">
+<a href = "https://github.com/Cogitate-consortium/iEEG-data-release/graphs/contributors">
   <img src = "https://contrib.rocks/image?repo=Cogitate-consortium/iEEG-data-release"/>
 </a>
 
