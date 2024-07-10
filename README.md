@@ -35,27 +35,36 @@ If you have any questions or any ideas to improve this repository, feel free to 
 ## How to cite us:
 If you use the scripts found in this repository, you can use the DOI provided by Zenodo to cite us. And here is a bibtex:
 ```
-@article{GramfortEtAl2013a,
+@article{LepauvreEtAl2024,
   title = {COGITATE-iEEG-DATA-RELEASE},
   author = {Lepauvre, Alex and Henin, Simon and Bendtz, Katarina and Sripad, Praveen and Bonacchi, Niccolò and Kreiman, Gabriel and Melloni, Lucia},
   year = {2024},
-  doi = {10.3389/fnins.2013.00267},
+  doi = {TO_BE_UPDATED},
 }
 ```
 If you use any the data for other purpose, you should cite the scientific data paper directly:
 
 ```
-@article{Open_multi-center_iEEG_dataset_with_task_probing_conscious_visual_perception,
+@article{SeedatEtAl2024,
   author = {Alia Seedat and Alex Lepauvre and Jay Jeschke and Urszula Gorska-Klimowska and Marcelo Armendariz and Katarina Bendtz and Simon Henin and Rony Hirschhorn and Tanya Brown and Erika Jensen and David Mazumder and Stephanie Montenegro and Leyao Yu and Niccol\`{o} Bonacchi and Praveen Sripad and Fatemeh Taheriyan and Orrin Devinsky and Patricia Dugan and Werner Doyle and Adeen Flinker and Daniel Friedman and Wendell Lake and Michael Pitts and Liad Mudrik and Melanie Boly and Sasha Devore and Gabriel Kreiman and Lucia Melloni},
-  title = {Your Article Title},
-  journal = {Journal Name},
-  year = {2024},
-  volume = {123},
-  number = {4},
-  pages = {567--590},
+  title = {Open multi-center iEEG dataset with task probing conscious visual perception},
+  journal = {TO_BE_UPDATED},
+  year = {TO_BE_UPDATED},
+  volume = {TO_BE_UPDATED},
+  number = {TO_BE_UPDATED},
+  pages = {TO_BE_UPDATED},
   doi = {TO_BE_UPDATED},
 }
 ```
+
+# Contributors:
+<!-- Copy-paste in your Readme.md file -->
+
+<a href = "https://github.com/Tanu-N-Prabhu/Python/graphs/contributors">
+  <img src = "https://contrib.rocks/image?repo = Cogitate-consortium/iEEG-data-release"/>
+</a>
+
+Made with [contributors-img](https://contrib.rocks).
 
 # Acknowledgments
 This notebook is brought to you by the intracranial team of the COGITATE consortium.
