@@ -1,0 +1,20 @@
+cff-version: 0.0.0
+message: "If you use this software, please cite it using the following metadata."
+title: "Your Repository Title"
+authors:
+  - family-names: "Lepauvre"
+    given-names: "Alex"
+  - family-names: "Henin"
+    given-names: "Simon"
+  - family-names: "Bendtz"
+    given-names: "Katarina"
+  - family-names: "Sripad"
+    given-names: "Praveen"
+  - family-names: "Bonacchi"
+    given-names: "Niccolò"
+  - family-names: "Kreiman"
+    given-names: "Gabriel"
+  - family-names: "Melloni"
+    given-names: "Lucia"
+  - name: "COGITATE consortium"
+date-released: 2024-07-10
