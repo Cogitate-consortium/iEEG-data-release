@@ -29,9 +29,6 @@ This repository contains jupyter notebooks, analysis pipelines and many differen
 
 My personal recommendation is to always start with this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/ieeg-single-subject-report.ipynb) as it gives a really good overview of how things work in general. 
 
-## How to get in touch:
-If you have any questions or any ideas to improve this repository, feel free to let us know by filing an issue in [github](https://github.com/Cogitate-consortium/iEEG-data-release/issues). We will try to get back to you as soon as we can.
-
 ## How to cite us:
 If you use the scripts found in this repository, you can use the DOI provided by Zenodo to cite us. And here is a bibtex:
 ```
@@ -65,6 +62,9 @@ If you use any the data for other purpose, you should cite the scientific data p
 </a>
 
 Made with [contributors-img](https://contrib.rocks).
+
+## Contributing:
+If you would like to contribute to this repository, you can get in touch with us by filing an [issue](https://github.com/Cogitate-consortium/iEEG-data-release/issues), describing the improvement you would like to implement or the issue you have found. We will try to get back to you as soon as possible. You can also create a pull request and asking us to review it!
 
 # Acknowledgments
 This notebook is brought to you by the intracranial team of the COGITATE consortium.
