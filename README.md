@@ -63,8 +63,28 @@ If you use any the data for other purpose, you should cite the scientific data p
 
 Made with [contributors-img](https://contrib.rocks).
 
-## Contributing:
-If you would like to contribute to this repository, you can get in touch with us by filing an [issue](https://github.com/Cogitate-consortium/iEEG-data-release/issues), describing the improvement you would like to implement or the issue you have found. We will try to get back to you as soon as possible. You can also create a pull request and asking us to review it!
+# Contributing to iEEG-data-release
+
+Thank you for considering contributing to our project! Here are a few guidelines to help you get started:
+
+## Pull Requests
+
+1. **File an issue**: Before making any changes, please open an [issue](https://github.com/Cogitate-consortium/iEEG-data-release/issues) to discuss the proposed changes. This helps us keep track of what needs to be done and ensures that your efforts align with the project's goals.
+2. **Fork the repository** and create your branch from `main`.
+3. **Commit your changes** and push your branch to your fork.
+4. **Submit a pull request** and request a review.
+
+### Branch Protection
+
+Our `main` branch is protected. All changes must be made via pull requests and require approval before being merged. This helps us maintain the quality and stability of the codebase.
+
+## Code Reviews
+
+All pull requests will be reviewed by a maintainer. Please be patient if we take a bit longer than expected. 
+
+## Questions?
+
+If you have any questions, feel free to open an issue or contact the maintainers (alex.lepauvre@ae.mpg.de).
 
 # Acknowledgments
 This notebook is brought to you by the intracranial team of the COGITATE consortium.
