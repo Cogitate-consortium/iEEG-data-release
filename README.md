@@ -59,16 +59,22 @@ If you use any the data for other purpose, you should cite the scientific data p
 ```
 ## Contributors
 
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/contributor1"><img src="https://avatars.githubusercontent.com/contributor1?v=4" width="100px;" alt=""/><br /><sub><b>Contributor One</b></sub></a><br /><a href="#code-contributor1" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/contributor2"><img src="https://avatars.githubusercontent.com/contributor2?v=4" width="100px;" alt=""/><br /><sub><b>Contributor Two</b></sub></a><br /><a href="#doc-contributor2" title="Docs">📖</a></td>
+  </tr>
+</table>
 
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-
-[![All Contributors](https://img.shields.io/github/all-contributors/Cogitate-consortium/iEEG-data-release?color=ee8449&style=flat-square)](#contributors)
 
 
 # Contributing to iEEG-data-release
