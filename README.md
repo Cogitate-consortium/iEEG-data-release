@@ -58,7 +58,7 @@ If you use any the data for other purpose, you should cite the scientific data p
 }
 ```
 # Contributors
-[![Contributors](https://contrib.rocks/image?repo=Cogitate-consortium/iEEG-data-release)](https://github.com/Cogitate-consortium/iEEG-data-release/graphs/contributors
+[![Contributors](https://contrib.rocks/image?repo=Cogitate-consortium/iEEG-data-release)](https://github.com/Cogitate-consortium/iEEG-data-release/graphs/contributors)
 
 # Contributing to iEEG-data-release
 
