@@ -1,8 +1,8 @@
 <img src="img/iEEG_data_release_header.svg" width=1400 />
 
-<div class="alert alert-info"><h4>Note</h4><p> 
-    This notebook does not aim to replicate the analysis of the COGITATE consortium analyses but rather guide users to use our data. The code to replicate the results will be shared <a href="url">here</a>.
-</p></div>
+
+>**The data required to run these notebooks are not yet available. We will update this page as soon as they are.**
+
 
 This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data paper published in nature: 
 
@@ -57,8 +57,19 @@ If you use any the data for other purpose, you should cite the scientific data p
   doi = {TO_BE_UPDATED},
 }
 ```
-# Contributors
-[![Contributors](https://contrib.rocks/image?repo=Cogitate-consortium/iEEG-data-release)](https://github.com/Cogitate-consortium/iEEG-data-release/graphs/contributors)
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+[![All Contributors](https://img.shields.io/github/all-contributors/Cogitate-consortium/iEEG-data-release?color=ee8449&style=flat-square)](#contributors)
+
 
 # Contributing to iEEG-data-release
 
