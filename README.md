@@ -66,8 +66,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/contributor1"><img src="https://avatars.githubusercontent.com/contributor1?v=4" width="100px;" alt=""/><br /><sub><b>Contributor One</b></sub></a><br /><a href="#code-contributor1" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/contributor2"><img src="https://avatars.githubusercontent.com/contributor2?v=4" width="100px;" alt=""/><br /><sub><b>Contributor Two</b></sub></a><br /><a href="#doc-contributor2" title="Docs">📖</a></td>
+    <td align="center"><a href="https://github.com/AlexLepauvre"><img src="https://avatars.githubusercontent.com/AlexLepauvre?v=4" width="100px;" alt=""/><br /><sub><b>Contributor One</b></sub></a><br /><a href="#code-AlexLepauvre" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/pravsripad"><img src="https://avatars.githubusercontent.com/pravsripad?v=4" width="100px;" alt=""/><br /><sub><b>Contributor Two</b></sub></a><br /><a href="#doc-pravsripad" title="Docs">📖</a></td>
   </tr>
 </table>
 
