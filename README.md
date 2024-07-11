@@ -66,6 +66,8 @@ If you use any the data for other purpose, you should cite the scientific data p
   <tr>
     <td align="center"><a href="https://github.com/AlexLepauvre"><img src="https://avatars.githubusercontent.com/AlexLepauvre?v=4" width="100px;" alt=""/><br /><sub><b>Alex Lepauvre</b></sub></a><br /><a href="#code-AlexLepauvre" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/pravsripad"><img src="https://avatars.githubusercontent.com/pravsripad?v=4" width="100px;" alt=""/><br /><sub><b>Praveen Sripad</b></sub></a><br /><a href="#doc-pravsripad" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/simonhenin"><img src="https://avatars.githubusercontent.com/simonhenin?v=4" width="100px;" alt=""/><br /     ><sub><b>Simon Henin</b></sub></a><br /><a href="#doc-simonhenin" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/KatBendtz"><img src="https://avatars.githubusercontent.com/KatBendtz?v=4" width="100px;" alt=""/><br /     ><sub><b>Katarina Bendtz</b></sub></a><br /><a href="#doc-KatBendtz" title="Code">💻</a></td>
   </tr>
 </table>
 
