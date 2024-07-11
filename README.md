@@ -1,7 +1,7 @@
 <img src="img/iEEG_data_release_header.svg" width=1400 />
 
-<div class="alert alert-warning"><h4>Note</h4><p> 
-    The cogitate data required to run these notebooks are not yet publicly available. We will update this page as soon as they are <a href="url">here</a>.
+<div class="alert alert-info"><h4>Note</h4><p> 
+    This notebook does not aim to replicate the analysis of the COGITATE consortium analyses but rather guide users to use our data. The code to replicate the results will be shared <a href="url">here</a>.
 </p></div>
 
 This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data paper published in nature: 
