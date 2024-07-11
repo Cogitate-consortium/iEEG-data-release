@@ -1,4 +1,8 @@
 {
-  "projectName": "iEEG-data-release",
-  "projectOwner": "Cogitate-consortium"
+    "projectName": "iEEG-data-release",
+    "projectOwner": "iEEG-data-release",
+    "repoType": "github",
+    "repoHost": "https://github.com",
+    "files": ["README.md"],
+    "contributors": []
 }
