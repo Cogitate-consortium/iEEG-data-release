@@ -7,21 +7,30 @@
 This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data paper published in nature: 
 
 ## Setup guide:
-First, you should install the environment and activate it:
-```
-conda env create -f environment.yml
-conda activate cog_ieeg_release
-```
+First, you should install the environment and activate it. This may be done as shown below.
+1. Using conda
+   ```
+   conda env create -f environment.yml
+   conda activate cog_ieeg_release
+   ```
+2. Using pip
+    ```
+    python -m venv cog_ieeg_release
+    source cog_ieeg_release/bin/activate
+    pip install -r requirements.txt
+    ```
+
+### 
 
 Then, you should adjust the path configuration in the environment_variable.py by setting the bids root to the local path where you would like to store your data:
+
 ```
 bids_root = "YOUR/LOCAL/PATH"
 ```
 
-That's the only setup you need to do. 
+That's the only setup you need to do.
 
 You don't need to download any data manually, has we have automated download implemented. You should only register to our database [here](https://www.arc-cogitate.com/data-release) to get your credentials. You will simply need to specify the name of the subject you would like to download, input your credentials and the data will get downloaded on your machine. 
-
 
 ## How to use this repository:
 This repository contains jupyter notebooks, analysis pipelines and many different functions. Depending on your interest, here are the different places to go to first:
@@ -35,6 +44,7 @@ My personal recommendation is to always start with this [notebook](https://githu
 
 ## How to cite us:
 If you use the scripts found in this repository, you can use the DOI provided by Zenodo to cite us. And here is a bibtex:
+
 ```
 @article{LepauvreEtAl2024,
   title = {COGITATE-iEEG-DATA-RELEASE},
@@ -43,6 +53,7 @@ If you use the scripts found in this repository, you can use the DOI provided by
   doi = {TO_BE_UPDATED},
 }
 ```
+
 If you use any the data for other purpose, you should cite the scientific data paper directly:
 
 ```
