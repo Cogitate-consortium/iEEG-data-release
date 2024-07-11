@@ -1,5 +1,9 @@
 <img src="img/iEEG_data_release_header.svg" width=1400 />
 
+<div class="alert alert-warning"><h4>Note</h4><p> 
+    The cogitate data required to run these notebooks are not yet publicly available. We will update this page as soon as they are <a href="url">here</a>.
+</p></div>
+
 This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data paper published in nature: 
 
 ## Setup guide:
@@ -53,15 +57,8 @@ If you use any the data for other purpose, you should cite the scientific data p
   doi = {TO_BE_UPDATED},
 }
 ```
-
-# Contributors:
-<!-- Copy-paste in your Readme.md file -->
-
-<a href = "https://github.com/Cogitate-consortium/iEEG-data-release/graphs/contributors">
-  <img src = "https://contrib.rocks/image?repo=Cogitate-consortium/iEEG-data-release"/>
-</a>
-
-Made with [contributors-img](https://contrib.rocks).
+# Contributors
+[![Contributors](https://contrib.rocks/image?repo=Cogitate-consortium/iEEG-data-release)](https://github.com/Cogitate-consortium/iEEG-data-release/graphs/contributors
 
 # Contributing to iEEG-data-release
 
@@ -84,7 +81,7 @@ All pull requests will be reviewed by a maintainer. Please be patient if we take
 
 ## Questions?
 
-If you have any questions, feel free to open an issue or contact the maintainers (alex.lepauvre@ae.mpg.de).
+If you have any questions, feel free to open an issue or contact the maintainers (alex.lepauvre@).
 
 # Acknowledgments
 This notebook is brought to you by the intracranial team of the COGITATE consortium.
