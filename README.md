@@ -66,8 +66,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/AlexLepauvre"><img src="https://avatars.githubusercontent.com/AlexLepauvre?v=4" width="100px;" alt=""/><br /><sub><b>Contributor One</b></sub></a><br /><a href="#code-AlexLepauvre" title="Code">💻</a></td>
-    <td align="center"><a href="https://github.com/pravsripad"><img src="https://avatars.githubusercontent.com/pravsripad?v=4" width="100px;" alt=""/><br /><sub><b>Contributor Two</b></sub></a><br /><a href="#doc-pravsripad" title="Docs">📖</a></td>
+    <td align="center"><a href="https://github.com/AlexLepauvre"><img src="https://avatars.githubusercontent.com/AlexLepauvre?v=4" width="100px;" alt=""/><br /><sub><b>Alex Lepauvre</b></sub></a><br /><a href="#code-AlexLepauvre" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/pravsripad"><img src="https://avatars.githubusercontent.com/pravsripad?v=4" width="100px;" alt=""/><br /><sub><b>Praveen Sripad</b></sub></a><br /><a href="#doc-pravsripad" title="Code">💻</a></td>
   </tr>
 </table>
 
