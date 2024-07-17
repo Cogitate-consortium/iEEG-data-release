@@ -111,6 +111,9 @@ All pull requests will be reviewed by a maintainer. Please be patient if we take
 
 If you have any questions, feel free to open an issue or contact the maintainers (alex.lepauvre@).
 
+## Additional notes
+The folder WU_coregistration contains scripts that were used on subjects from Wisconsin university to co-register the trigger signal with the recorded iEEG signals (as both were recorded on different systems). This procedure was applied locally on the site before sharing the raw data, and is available here only for reference purposes. It should not be applied on the data at any points.
+
 # Acknowledgments
 This notebook is brought to you by the intracranial team of the COGITATE consortium.
 <div style="display: flex; flex-wrap: wrap; justify-content: space-around;">
