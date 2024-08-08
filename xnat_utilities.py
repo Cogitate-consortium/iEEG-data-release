@@ -4,7 +4,7 @@ import os
 import getpass
 import shutil
 import os.path as op
-from environment_variables import bids_root, xnat_host, xnat_project
+from environment_variables import dflt_bids_root, xnat_host, xnat_project
 
 def move_dir_contents(source_dir, destination_dir):
     """
@@ -29,13 +29,16 @@ def move_dir_contents(source_dir, destination_dir):
     except Exception as e:
         print("An error occurred: " + str(e))
 
-def xnat_download(subjects_to_download, overwrite=False):
+def xnat_download(subjects_to_download, bids_root=None, overwrite=False):
     """
     Download subjects data from XNAT project.
 
     :param subjects_to_download: List of subjects to download.
     :param overwrite: Flag to overwrite existing data.
     """
+    if bids_root is None:
+        bids_root = dflt_bids_root
+        
     if not isinstance(xnat_project, str):
         print('project not provided or wrong type provided, must be a string.')
         sys.exit(1)
