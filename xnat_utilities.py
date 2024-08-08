@@ -4,7 +4,7 @@ import os
 import getpass
 import shutil
 import os.path as op
-from environment_variables import dflt_bids_root, xnat_host, xnat_project
+from environment_variables import bids_root, xnat_host, xnat_project
 
 def move_dir_contents(source_dir, destination_dir):
     """
@@ -29,15 +29,15 @@ def move_dir_contents(source_dir, destination_dir):
     except Exception as e:
         print("An error occurred: " + str(e))
 
-def xnat_download(subjects_to_download, bids_root=None, overwrite=False):
+def xnat_download(subjects_to_download, to=None, overwrite=False):
     """
     Download subjects data from XNAT project.
 
     :param subjects_to_download: List of subjects to download.
     :param overwrite: Flag to overwrite existing data.
     """
-    if bids_root is None:
-        bids_root = dflt_bids_root
+    if to is None:
+        to = bids_root
         
     if not isinstance(xnat_project, str):
         print('project not provided or wrong type provided, must be a string.')
@@ -46,10 +46,10 @@ def xnat_download(subjects_to_download, bids_root=None, overwrite=False):
     if isinstance(subjects_to_download, str):
         subjects_to_download = [subjects_to_download]
 
-    if not op.isdir(bids_root):
-        os.makedirs(bids_root)
+    if not op.isdir(to):
+        os.makedirs(to)
 
-    if all([os.path.isdir(op.join(bids_root, subject)) for subject in subjects_to_download]) and not overwrite:
+    if all([os.path.isdir(op.join(to, subject)) for subject in subjects_to_download]) and not overwrite:
         print(f'The subjects are already present on your computer.')
         print(f'Set overwrite to true if you wish to overwrite them.')
         return
@@ -72,11 +72,11 @@ def xnat_download(subjects_to_download, bids_root=None, overwrite=False):
 
     # --------------------------------------------------------------------------------
     # Project level data:
-    if overwrite or not os.path.isfile(op.join(bids_root, "dataset_description.json")):
-        proj_bids_root = op.join(bids_root, xnat_project, 'resources', 'bids', 'files')
-        project.resources['bids'].download_dir(bids_root)
-        move_dir_contents(proj_bids_root, bids_root)
-        shutil.rmtree(op.join(bids_root, xnat_project))
+    if overwrite or not os.path.isfile(op.join(to, "dataset_description.json")):
+        proj_bids_root = op.join(to, xnat_project, 'resources', 'bids', 'files')
+        project.resources['bids'].download_dir(to)
+        move_dir_contents(proj_bids_root, to)
+        shutil.rmtree(op.join(to, xnat_project))
     else:
         print(f'The project data of {xnat_project} are already present on your computer.')
         print(f'Set overwrite to true if you wish to overwrite them.')
@@ -93,12 +93,12 @@ def xnat_download(subjects_to_download, bids_root=None, overwrite=False):
     # Download single subjects data:
     for subject in subjects_to_download:
         print(f'Downloading subject {subject}')
-        subj_bids_root = op.join(bids_root, subject, 'resources', 'bids', 'files')
+        subj_bids_root = op.join(to, subject, 'resources', 'bids', 'files')
 
-        if overwrite or not os.path.isdir(op.join(bids_root, subject)):
-            session.projects.get(xnat_project).subjects.get(subject).resources['bids'].download_dir(bids_root)
-            move_dir_contents(subj_bids_root, bids_root)
-            shutil.rmtree(op.join(bids_root, subject, 'resources'))
+        if overwrite or not os.path.isdir(op.join(to, subject)):
+            session.projects.get(xnat_project).subjects.get(subject).resources['bids'].download_dir(to)
+            move_dir_contents(subj_bids_root, to)
+            shutil.rmtree(op.join(to, subject, 'resources'))
         else:
             print(f'The project data of subject {subject} are already present on your computer.')
             print(f'Set overwrite to true if you wish to overwrite them.')
