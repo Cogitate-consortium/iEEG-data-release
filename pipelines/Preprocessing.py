@@ -5,11 +5,11 @@ import sys
 
 from pathlib import Path
 from mne_bids import BIDSPath, read_raw_bids
-from HelperFunctions import (notch_filtering,
-                             mne_data_saver, plot_channels_psd, description_ch_rejection,
-                             plot_bad_channels, custom_car, laplacian_referencing,
-                             detrend_runs, compute_hg, compute_erp, epoching, roi_mapping,
-                             plot_electrode_localization)
+from utils.HelperFunctions import (notch_filtering,
+                                   mne_data_saver, plot_channels_psd, description_ch_rejection,
+                                   plot_bad_channels, custom_car, laplacian_referencing,
+                                   detrend_runs, compute_hg, compute_erp, epoching, roi_mapping,
+                                   plot_electrode_localization)
 # Add the parent directory to sys.path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)

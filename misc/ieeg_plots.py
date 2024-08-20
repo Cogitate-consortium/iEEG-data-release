@@ -12,7 +12,7 @@ from matplotlib.cm import ScalarMappable
 import mne
 from mne_bids import BIDSPath, read_raw_bids
 
-from HelperFunctions import mri_2_mni, project_montage_to_surf, count_colors, exclude_distant_channels
+from utils.HelperFunctions import project_montage_to_surf, count_colors, exclude_distant_channels
 import environment_variables as ev
 
 SMALL_SIZE = 14
