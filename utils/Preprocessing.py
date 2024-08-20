@@ -545,7 +545,7 @@ def preprocessing(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"C:\Users\alexander.lepauvre\Documents\GitHub\iEEG-data-release\pipelines\preprocessing_config-default.json"
+    config_file = r"/pipelines/preprocessing_config-default.json"
     import pandas as pd
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
     subjects = ["CF102"] # , "CF104", "CF105", "CF106"]
