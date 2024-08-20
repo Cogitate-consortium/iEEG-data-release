@@ -153,7 +153,7 @@ def onset_responsiveness(param, subjects,
             for ch in sig_channels:
                 plot_ieeg_image(epochs, ch.split("-")[1], show=False, 
                                 units=param['units'], scalings=param['scaling'], cmap="RdYlBu_r",
-                                center=None, ylim_prctile=None, logistic_cmap=True, ci=0.95, sigma=0.5)
+                                center=None, ylim_prctile=None, logistic_cmap=True, ci=0.95)
                 fig_file = Path(sig_root, '{}{}{}'.format(file_prefix, ch, '-image.png'))
                 plt.savefig(fig_file)
                 plt.close()
@@ -168,7 +168,7 @@ def onset_responsiveness(param, subjects,
                 for ch in non_sig_channels:
                     plot_ieeg_image(epochs, ch.split("-")[1], show=False, 
                                     units=param['units'], scalings=param['scaling'], cmap="RdYlBu_r",
-                                    center=None, ylim_prctile=None, logistic_cmap=True, ci=0.95, sigma=0.5)
+                                    center=None, ylim_prctile=None, logistic_cmap=True, ci=0.95)
                     fig_file = Path(non_sig_root, '{}{}{}'.format(file_prefix, ch, '-image.png'))
                     plt.savefig(fig_file)
                     plt.close()
