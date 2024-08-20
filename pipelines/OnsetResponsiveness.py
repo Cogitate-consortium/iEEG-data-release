@@ -7,7 +7,7 @@ import mne
 import matplotlib.pyplot as plt
 from pingouin import ttest
 
-from HelperFunctions import baseline_scaling
+from HelperFunctions import baseline_scaling, plot_ieeg_image
 
 import environment_variables as ev
 
@@ -151,13 +151,9 @@ def onset_responsiveness(param, subjects,
                 # Creating the directory:
                 os.makedirs(sig_root)
             for ch in sig_channels:
-                ch_data = np.squeeze(epochs.get_data(picks=ch.split("-")[1])).flatten()
-                vmin = np.percentile(ch_data, 2)
-                vmax = np.percentile(ch_data, 98)
-                mne.viz.plot_epochs_image(epochs, vmin=vmin, vmax=vmax, picks=ch.split("-")[1], order=trials_order,
-                                          show=False, units=dict(ecog=param['units'], seeg=param['units']),
-                                          scalings=dict(ecog=param['scaling'], seeg=param['scaling']),
-                                          evoked=True, cmap="RdYlBu_r", sigma=0.5)
+                plot_ieeg_image(epochs, ch.split("-")[1], show=False, 
+                                units=param['units'], scalings=param['scaling'], cmap="RdYlBu_r",
+                                center=None, ylim_prctile=None, logistic_cmap=True, ci=0.95, sigma=0.5)
                 fig_file = Path(sig_root, '{}{}{}'.format(file_prefix, ch, '-image.png'))
                 plt.savefig(fig_file)
                 plt.close()
@@ -170,14 +166,9 @@ def onset_responsiveness(param, subjects,
                     # Creating the directory:
                     os.makedirs(non_sig_root)
                 for ch in non_sig_channels:
-                    ch_data = np.squeeze(epochs.get_data(picks=ch.split("-")[1])).flatten()
-                    vmin = np.percentile(ch_data, 2)
-                    vmax = np.percentile(ch_data, 98)
-                    mne.viz.plot_epochs_image(epochs, vmin=vmin, vmax=vmax, picks=ch.split("-")[1],
-                                              order=trials_order, show=False,
-                                              units=dict(ecog=param['units'], seeg=param['units']),
-                                              scalings=dict(ecog=param['scaling'], seeg=param['scaling']),
-                                              evoked=True, cmap="RdYlBu_r", sigma=0.5)
+                    plot_ieeg_image(epochs, ch.split("-")[1], show=False, 
+                                    units=param['units'], scalings=param['scaling'], cmap="RdYlBu_r",
+                                    center=None, ylim_prctile=None, logistic_cmap=True, ci=0.95, sigma=0.5)
                     fig_file = Path(non_sig_root, '{}{}{}'.format(file_prefix, ch, '-image.png'))
                     plt.savefig(fig_file)
                     plt.close()
