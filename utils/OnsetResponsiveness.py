@@ -193,7 +193,7 @@ def onset_responsiveness(param, subjects,
 
 
 if __name__ == "__main__":
-    config_file = r"../pipelines/Onset_responsiveness_config-default.json"
+    config_file = r"../configs/Onset_responsiveness_config-default.json"
     subjects_list = ["CF102"]  # ["SF124", "SF125", "SF126"]
     onset_responsiveness(config_file, subjects_list,
                          plot_single_channels=True, plot_only_responsive=True)

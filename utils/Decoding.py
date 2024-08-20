@@ -194,6 +194,6 @@ def decoding(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"../pipelines/Decoding_config-default.json"
+    config_file = r"../configs/Decoding_config-default.json"
     subjects_list = ["SF102"]
     decoding(config_file, subjects_list)

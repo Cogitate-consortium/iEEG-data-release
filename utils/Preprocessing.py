@@ -60,7 +60,7 @@ def preprocessing(param, subjects):
     :param param: (path-like or dictionary) contains the parameters for the preprocessing pipeline
     :param subjects: (list of strings) list of the subjects on which to apply the specified preprocessing pipeline.
     return:
-        - None: the output of the preprocessing pipelines are saved under $bids_root/derivatives/preprocessing
+        - None: the output of the preprocessing configs are saved under $bids_root/derivatives/preprocessing
     """
     print("=" * 80)
     print("Welcome to preprocessing!")
@@ -545,7 +545,7 @@ def preprocessing(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"/pipelines/preprocessing_config-default.json"
+    config_file = r"/configs/preprocessing_config-default.json"
     import pandas as pd
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
     subjects = ["CF102"] # , "CF104", "CF105", "CF106"]
