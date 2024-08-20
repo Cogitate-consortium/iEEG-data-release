@@ -1376,9 +1376,8 @@ def exclude_distant_channels(montage, subject, fs_dir, max_dist=5):
     return montage
 
 
-def plot_ieeg_image(epo, channel, show=False, units="HGP (norm.)",
-                    scalings=1, cmap="RdYlBu_r", evk_method="mean",
-                    center=1, ylim_prctile=95, ci=0.95, ci_method="mean",
+def plot_ieeg_image(epo, channel, show=False, units="HGP (norm.)", scalings=1, cmap="RdYlBu_r",
+                    center=1, ylim_prctile=95, ci=0.95, evk_method="mean", ci_method="mean",
                     evk_colors="k"):
     """
     Plot an iEEG (intracranial EEG) image with specified settings,
