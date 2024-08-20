@@ -25,7 +25,7 @@ def copy_images(src, dst):
 def subject_report_html(subject_id):
     input_nb = 'ieeg-single-subject-report.ipynb'  # Replace with your notebook filename
     output_nb = f'output_{subject_id}.ipynb'
-    report_dir = 'subjects_reports'
+    report_dir = '../subjects_reports'
     html_output = os.path.join(report_dir, f'report_{subject_id}.html')
 
     # Ensure the reports directory exists
@@ -33,7 +33,7 @@ def subject_report_html(subject_id):
         os.makedirs(report_dir)
 
     # Copy the images to the directory to make sure the notebook headers and footers don't break
-    copy_images('img', os.path.join(report_dir, 'img'))
+    copy_images('../img', os.path.join(report_dir, 'img'))
     # Execute the notebook for the given subject
     pm.execute_notebook(
         input_nb,
