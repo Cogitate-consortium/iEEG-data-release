@@ -69,7 +69,3 @@ if __name__ == "__main__":
     for subject in subjects:
         print(subject)
         subject_report_html(subject)
-        # try:
-        #     subject_report_html(subject)
-        # except:
-        #     print("WARNING: The notebook could not be generated for sub-" + subject)

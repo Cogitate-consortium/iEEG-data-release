@@ -300,7 +300,7 @@ def get_cmap_rgb_values(values, cmap=None, center=None):
 
 def plot_ieeg_image(epo, channel, order=None, show=False, units="HGP (norm.)", scalings=1, cmap="RdYlBu_r",
                     center=1, ylim_prctile=95, logistic_cmap=True, ci=0.95, evk_method="mean", ci_method="mean",
-                    evk_colors="k"):
+                    evk_colors="k", vlines_s=0):
     """
     Plot an iEEG (intracranial EEG) image with the option to use logistic normalization for the colormap,
     including confidence intervals and evoked responses.
@@ -381,7 +381,9 @@ def plot_ieeg_image(epo, channel, order=None, show=False, units="HGP (norm.)", s
                                            lambda y: _inverse(y, x0=0, k=1)),
                                           vmin=vmin, vmax=vmax)
         cmap = mcolors.ListedColormap(cmap(norm(np.linspace(vmin, vmax, 256))))
-
+    if vlines_s is not None:
+        if isinstance(vlines_s, int) or isinstance(vlines_s, float):
+            vlines_s = [vlines_s]
     # Plot the image:
     figs = mne.viz.plot_epochs_image(epo, picks=channel, show=show, order=order,
                                      units=dict(ecog=units, seeg=units),
@@ -400,6 +402,9 @@ def plot_ieeg_image(epo, channel, order=None, show=False, units="HGP (norm.)", s
     ax.cla()
     ax.plot(epo.times, evk, color=evk_colors)
     ax.fill_between(epo.times, np.squeeze(ci_up), np.squeeze(ci_low), color=evk_colors, alpha=0.3)
+    if vlines_s is not None:
+        for x in vlines_s:
+            ax.axvline(x=x, ymin=ax.get_ylim()[0], ymax=ax.get_ylim()[1], linestyle='dotted')
     ax.set_xlim([epo.times[0], epo.times[-1]])
     ax.set_ylabel(units)
     ax.set_xlabel("Time (s)")
