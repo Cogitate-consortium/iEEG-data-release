@@ -6,6 +6,7 @@ import shutil
 import os.path as op
 from environment_variables import bids_root, xnat_host, xnat_project
 
+
 def move_dir_contents(source_dir, destination_dir):
     """
     Move contents from source directory to destination directory.
@@ -28,6 +29,7 @@ def move_dir_contents(source_dir, destination_dir):
         print("Error: " + str(e))
     except Exception as e:
         print("An error occurred: " + str(e))
+
 
 def xnat_download(subjects_to_download, to=None, overwrite=False):
     """
