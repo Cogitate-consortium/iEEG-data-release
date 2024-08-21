@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif
 from mne.decoding import (GeneralizingEstimator, cross_val_multiscore)
 
-from utils.HelperFunctions import baseline_scaling
+from cog_ieeg.HelperFunctions import baseline_scaling
 import environment_variables as ev
 
 

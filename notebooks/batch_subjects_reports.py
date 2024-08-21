@@ -10,7 +10,7 @@ import sys
 # Add the parent directory to sys.path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
-from utils.xnat_utilities import xnat_download
+from cog_ieeg.xnat_utilities import xnat_download
 
 
 def copy_images(src, dst):
