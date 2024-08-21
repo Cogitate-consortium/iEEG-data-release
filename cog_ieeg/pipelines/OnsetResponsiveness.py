@@ -13,8 +13,8 @@ from cog_ieeg.processing import baseline_scaling
 import environment_variables as ev
 
 
-def onset_responsiveness(param, subjects,
-                         plot_single_channels=True, plot_only_responsive=True):
+def run_onset_responsiveness(param, subjects,
+                             plot_single_channels=True, plot_only_responsive=True):
     print("=" * 80)
     print("Welcome to Onset Responsiveness!")
     print("The onset responsive channels of the following subjects will be determined: ")
@@ -196,5 +196,5 @@ def onset_responsiveness(param, subjects,
 if __name__ == "__main__":
     config_file = r"../../configs/Onset_responsiveness_config-default.json"
     subjects_list = ["CF102"]  # ["SF124", "SF125", "SF126"]
-    onset_responsiveness(config_file, subjects_list,
-                         plot_single_channels=True, plot_only_responsive=True)
+    run_onset_responsiveness(config_file, subjects_list,
+                             plot_single_channels=True, plot_only_responsive=True)

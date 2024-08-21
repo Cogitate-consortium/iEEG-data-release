@@ -15,7 +15,7 @@ from cog_ieeg.processing import baseline_scaling
 import environment_variables as ev
 
 
-def decoding(param, subjects):
+def run_decoding(param, subjects):
     print("=" * 80)
     print("Welcome to Decoding!")
     print("The onset responsive channels of the following subjects will be determined: ")
@@ -196,4 +196,4 @@ def decoding(param, subjects):
 if __name__ == "__main__":
     config_file = r"../../configs/Decoding_config-default.json"
     subjects_list = ["SF102"]
-    decoding(config_file, subjects_list)
+    run_decoding(config_file, subjects_list)

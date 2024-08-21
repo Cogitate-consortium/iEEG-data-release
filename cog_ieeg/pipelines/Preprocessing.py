@@ -53,7 +53,7 @@ ERROR_SIGNAL_MISSING = "For the preprocessing step {step}, you have passed the s
                        "\ngenerated. Make sure to check your config file"
 
 
-def preprocessing(param, subjects):
+def run_preprocessing(param, subjects):
     """
     This function applies a preprocessing pipeline to the iEEG data of the subjects passed in the list subjects list.
     The preprocessing pipeline is conducted according to the parameters passed in param. The param can either be a
@@ -551,4 +551,4 @@ if __name__ == "__main__":
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
     subjects = ["CF102"] # , "CF104", "CF105", "CF106"]
     for sub in subjects:
-        preprocessing(config_file, sub)
+        run_preprocessing(config_file, sub)
