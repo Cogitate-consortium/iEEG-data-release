@@ -404,7 +404,7 @@ def plot_ieeg_image(epo, channel, order=None, show=False, units="HGP (norm.)", s
     ax.fill_between(epo.times, np.squeeze(ci_up), np.squeeze(ci_low), color=evk_colors, alpha=0.3)
     if vlines_s is not None:
         for x in vlines_s:
-            ax.axvline(x=x, ymin=ax.get_ylim()[0], ymax=ax.get_ylim()[1], linestyle='dotted')
+            ax.axvline(x=x, linestyle='dashed', color="k", linewidth=0.75)
     ax.set_xlim([epo.times[0], epo.times[-1]])
     ax.set_ylabel(units)
     ax.set_xlabel("Time (s)")
