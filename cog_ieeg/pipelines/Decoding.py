@@ -195,6 +195,6 @@ def run_decoding(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = get_dft_config(r"Decoding_config-default.json")
+    config_file = get_dft_config(r"decoding_config-default.json")
     subjects_list = ["SF102"]
     run_decoding(config_file, subjects_list)

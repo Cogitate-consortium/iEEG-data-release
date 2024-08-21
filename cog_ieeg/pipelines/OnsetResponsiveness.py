@@ -195,7 +195,7 @@ def run_onset_responsiveness(param, subjects,
 
 
 if __name__ == "__main__":
-    config_file = get_dft_config(r"Onset_responsiveness_config-default.json")
+    config_file = get_dft_config(r"onset_responsiveness_config-default.json")
     subjects_list = ["CF102"]  # ["SF124", "SF125", "SF126"]
     run_onset_responsiveness(config_file, subjects_list,
                              plot_single_channels=True, plot_only_responsive=True)
