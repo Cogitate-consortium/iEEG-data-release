@@ -1,0 +1,24 @@
+{
+    "session": "1",
+    "task": "Dur",
+    "data_type": "ieeg",
+    "signal": "high_gamma",
+    "channel_types": {
+        "ecog":  true,
+        "seeg":  true,
+        "exclude": "bads"
+    },
+    "condition": ["stimulus onset/Irrelevant", "stimulus onset/Relevant non-target"],
+    "baseline_method": null,
+    "baseline_time": null,
+    "prestimulus_window": [-0.300, 0],
+    "poststimulus_window": [0.050, 0.350],
+    "metric": "auc",
+    "alternative": "two-sided",
+    "bf_thresh": 3,
+    "column_order": ["task_relevance", "category", "duration", "orientation"],
+    "units": "HGP (norm.)",
+    "scaling": 1,
+    "vmin": 0,
+    "vmax": 5
+}

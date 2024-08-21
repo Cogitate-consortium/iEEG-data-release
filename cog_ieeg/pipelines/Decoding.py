@@ -12,6 +12,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 from mne.decoding import (GeneralizingEstimator, cross_val_multiscore)
 
 from cog_ieeg.processing import baseline_scaling
+from cog_ieeg.utils import get_dft_config
 import environment_variables as ev
 
 
@@ -194,6 +195,6 @@ def run_decoding(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"../../configs/Decoding_config-default.json"
+    config_file = get_dft_config(r"Decoding_config-default.json")
     subjects_list = ["SF102"]
     run_decoding(config_file, subjects_list)

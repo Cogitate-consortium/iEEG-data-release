@@ -1,0 +1,234 @@
+{
+    "session": "1",
+    "task": "Dur",
+    "data_type": "ieeg",
+    "downsample_rate": 512,
+    "njobs": 4,
+    "save_intermediary_steps": false,
+    "check_plots": false,
+    "plot_single_channels": false,
+    "preprocessing_steps": [
+        "plot_channels_loc",
+        "description_bad_channels_rejection",
+        "notch_filtering",
+        "laplace_reference",
+        "hg_computations",
+        "erp_computations",
+        "epoching"
+    ],
+    "plot_channels_loc": {
+        "broadband": {
+            "channel_types": {
+                "ecog":  true,
+                "seeg":  true,
+                "exclude": "bads"
+            }
+        }
+    },
+    "atlas_mapping": {
+        "broadband": {
+            "copy_recon": true,
+            "recon_source": "{0}/{0}_ECOG_V1/RESOURCES/ElecRecon/fs_recon/{0}",
+            "list_parcellations": [
+                "aparc+aseg",
+                "aparc.a2009s+aseg"
+            ],
+            "remove_channels_unknown": true
+        }
+    },
+    "notch_filtering": {
+        "broadband": {
+            "channel_types": {
+                "ecog":  true,
+                "seeg":  true,
+                "exclude": "bads"
+            },
+            "frequency": 60,
+            "remove_harmonics": true,
+            "filter_type": "fir",
+            "cutoff_lowpass_bw": 63,
+            "cutoff_highpass_bw": 57
+        }
+    },
+    "manual_bad_channels_rejection": {
+        "broadband": {
+            "channel_types": "all",
+            "method": "manual"
+        }
+    },
+    "description_bad_channels_rejection": {
+        "broadband": {
+            "bad_channels_description": ["epileptic_onset", "noisy_user1", "dead_user1", "wrong_channel_user1",
+                "outside_brain"],
+            "discard_bads": true
+        }
+    },
+    "car": {
+        "broadband": {
+            "reference_channel_types": {
+                "ecog":  true,
+                "seeg":  true,
+                "exclude": "bads"
+            },
+            "target_channel_types": {
+                "ecog":  true,
+                "seeg":  true,
+                "exclude": "bads"
+            }
+        }
+    },
+    "laplace_reference": {
+        "broadband": {
+            "channel_types": {
+                "ecog":  true,
+                "seeg":  true,
+                "exclude": []
+            }
+        }
+    },
+    "hg_computations": {
+        "high_gamma": {
+            "source_signal": "broadband",
+            "computation_parameters": {
+                "frequency_range": [
+                    70,
+                    150
+                ],
+                "bands_width": 10,
+                "channel_types": {
+                    "ecog": true,
+                    "seeg": true,
+                    "exclude": "bads"
+                },
+                "do_baseline_normalization": true
+            }
+        }
+    },
+    "erp_computations": {
+        "erp": {
+            "source_signal": "broadband",
+            "computation_parameters": {
+                "frequency_range": [
+                    0,
+                    30
+                ],
+                "channel_types": {
+                    "ecog": true,
+                    "seeg": true,
+                    "exclude": "bads"
+                }
+            }
+        }
+    },
+    "manual_artifact_detection": {
+        "broadband": {
+            "channel_types": "all",
+            "method": "manual"
+        },
+        "high_gamma": {
+            "channel_types": "all",
+            "method": "manual"
+        }
+    },
+    "epoching": {
+        "broadband": {
+            "picks": "all",
+            "tmin": -1,
+            "tmax": 2.5,
+            "baseline": null,
+            "events_not_to_epoch": [
+                "response",
+                "jitter onset"
+            ],
+            "reject_by_annotation": true,
+            "meta_data_column": ["event type", "block", "miniblock", "category", "identity", "orientation",
+                "duration", "task_relevance", "response"]
+        },
+        "high_gamma": {
+            "picks": "all",
+            "tmin": -0.75,
+            "tmax": 2.5,
+            "baseline": null,
+            "events_not_to_epoch": [
+                "response",
+                "jitter onset"
+            ],
+            "reject_by_annotation": true,
+            "meta_data_column": ["event type", "block", "miniblock", "category", "identity", "orientation",
+                "duration", "task_relevance", "response"]
+        },
+        "erp": {
+            "picks": "all",
+            "tmin": -0.75,
+            "tmax": 2.5,
+            "baseline": null,
+            "events_not_to_epoch": [
+                "response",
+                "jitter onset"
+            ],
+            "reject_by_annotation": true,
+            "meta_data_column": ["event type", "block", "miniblock", "category", "identity", "orientation",
+                "duration", "task_relevance", "response"]
+        }
+    },
+    "automated_artifact_detection": {
+        "broadband": {
+            "method": "automated",
+            "automated_artifact_rejection_parameters": {
+                "trial_proportion_cutoff": 0.1,
+                "standard_deviation_cutoff": 4,
+                "channel_types": {
+                    "seeg": true,
+                    "ecog": true
+                },
+                "aggregation_function": "ptp"
+            }
+        },
+        "high_gamma": {
+            "method": "automated",
+            "automated_artifact_rejection_parameters": {
+                "trial_proportion_cutoff": 0.1,
+                "standard_deviation_cutoff": 4,
+                "channel_types": {
+                    "seeg": true,
+                    "ecog": true
+                },
+                "aggregation_function": "auc"
+            }
+        }
+    },
+    "plot_epochs": {
+        "signals": ["broadband", "high_gamma"],
+        "channel_types": {
+                "ecog":  true,
+                "seeg":  true,
+                "exclude": "bads"
+            },
+        "do_baseline_correction": true,
+        "baseline_meth_mapping": {
+            "broadband": "mean",
+            "erp": "mean",
+            "high_gamma": "ratio",
+            "alpha": "ratio",
+            "theta": "ratio",
+            "beta": "ratio"
+        },
+        "raster_grid_size": [8, 8],
+        "evoked_grid_size": [6, 6],
+        "plot_per_cond": "task_relevance",
+        "plotting_parameters": {
+            "sort_conditions": [
+                "category",
+                "duration"
+            ],
+            "v_lines": [
+                0,
+                0.5,
+                1.0,
+                1.5
+            ],
+            "plot_evoked": true,
+            "plot_standard_error": true
+        }
+    }
+}

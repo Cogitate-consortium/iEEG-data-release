@@ -17,6 +17,18 @@ This code is licensed under the MIT License.
 import json
 import os
 from pathlib import Path
+import importlib.resources as pkg_resources
+
+
+def get_dft_config(filename):
+    """
+    Load a default configuration file from the 'config' directory within the package.
+
+    :param filename: The name of the configuration file (e.g., 'preprocessing_config-default.json').
+    :return: Dictionary containing the configuration.
+    """
+    with pkg_resources.path('cog_ieeg.config', filename) as config_path:
+        return Path(config_path)
 
 
 def path_generator(directory):

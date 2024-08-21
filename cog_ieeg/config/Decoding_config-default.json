@@ -1,0 +1,24 @@
+{
+    "njobs": 1,
+    "session": "1",
+    "task": "Dur",
+    "data_type": "ieeg",
+    "signal": "high_gamma",
+    "channel_types": {
+        "ecog":  true,
+        "seeg":  true,
+        "exclude": "bads"
+    },
+    "condition": ["stimulus onset/Irrelevant/face", "stimulus onset/Irrelevant/object"],
+    "baseline_method": null,
+    "baseline_time": null,
+    "resample_freq": 15,
+    "scaler": true,
+    "do_feature_selection": false,
+    "k_features": 30,
+    "metric": "roc_auc",
+    "train_group": ["stimulus onset/Irrelevant"],
+    "test_group": ["stimulus onset/Irrelevant"],
+    "n_folds": 5,
+    "decoding_target": "category"
+}

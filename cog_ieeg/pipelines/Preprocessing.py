@@ -7,7 +7,7 @@ from pathlib import Path
 from mne_bids import BIDSPath, read_raw_bids
 from cog_ieeg.localization import roi_mapping
 from cog_ieeg.vizualization import plot_channels_psd, plot_bad_channels, plot_electrode_localization
-from cog_ieeg.utils import mne_data_saver
+from cog_ieeg.utils import mne_data_saver, get_dft_config
 from cog_ieeg.processing import detrend_runs, custom_car, epoching, compute_hg, compute_erp, description_ch_rejection, \
     laplacian_referencing, notch_filtering
 
@@ -546,7 +546,7 @@ def run_preprocessing(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"../../configs/preprocessing_config-default.json"
+    config_file = get_dft_config("preprocessing_config-default.json")
     import pandas as pd
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
     subjects = ["CF102"] # , "CF104", "CF105", "CF106"]
