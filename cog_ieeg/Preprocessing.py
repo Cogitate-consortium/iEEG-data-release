@@ -5,11 +5,12 @@ import sys
 
 from pathlib import Path
 from mne_bids import BIDSPath, read_raw_bids
-from cog_ieeg.HelperFunctions import (notch_filtering,
-                                      mne_data_saver, plot_channels_psd, description_ch_rejection,
-                                      plot_bad_channels, custom_car, laplacian_referencing,
-                                      detrend_runs, compute_hg, compute_erp, epoching, roi_mapping,
-                                      plot_electrode_localization)
+from cog_ieeg.localization import roi_mapping
+from cog_ieeg.vizualization import plot_channels_psd, plot_bad_channels, plot_electrode_localization
+from cog_ieeg.utils import mne_data_saver
+from cog_ieeg.processing import detrend_runs, custom_car, epoching, compute_hg, compute_erp, description_ch_rejection, \
+    laplacian_referencing, notch_filtering
+
 # Add the parent directory to sys.path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
@@ -545,12 +546,9 @@ def preprocessing(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = r"/configs/preprocessing_config-default.json"
+    config_file = r"../configs/preprocessing_config-default.json"
     import pandas as pd
     subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
     subjects = ["CF102"] # , "CF104", "CF105", "CF106"]
     for sub in subjects:
-        try:
-            preprocessing(config_file, sub)
-        except:
-            print("WARNING: PREPROCESSING FAILED FOR SUB-" + sub)
+        preprocessing(config_file, sub)

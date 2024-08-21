@@ -7,7 +7,8 @@ import mne
 import matplotlib.pyplot as plt
 from pingouin import ttest
 
-from cog_ieeg.HelperFunctions import baseline_scaling, plot_ieeg_image
+from cog_ieeg.vizualization import plot_ieeg_image
+from cog_ieeg.processing import baseline_scaling
 
 import environment_variables as ev
 
