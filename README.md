@@ -4,7 +4,7 @@
 >**The data required to run these notebooks are not yet available. We will update this page as soon as they are.**
 
 
-This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data paper published in nature: 
+This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data we have recently submitted. In addition, we have packaged various utilities that were created during the cogitate as a python package named cog_ieeg.
 
 ## Setup guide:
 First, you should install the environment and activate it. This may be done as shown below.
@@ -35,10 +35,10 @@ You don't need to download any data manually, has we have automated download imp
 ## How to use this repository:
 This repository contains jupyter notebooks, analysis pipelines and many different functions. Depending on your interest, here are the different places to go to first:
 
-- If you are interested in iEEG data analysis and you would like to see what are the different steps involved OR if you are interested in the COGITATE data and would like to get a sense of how to work with them, go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/ieeg-single-subject-report.ipynb)
-- If you have decided you would like to do something with the cogitate data, you should go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/ieeg-single-subject-report.ipynb). It can be run on each subject to get an idea of channels localization, responses observed... You can also used this [script](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/batch_subjects_reports.py) to specify a set of subjects to generate reports for each of them as HTML
-- If you are a curious about the implementation of different functions we are using, you can go have a look at this [file](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/HelperFunctions.py). It contains all the single functions we are using (high gamma computations and so on)
-- If you have your own data and would like to use pipelines that are similar to ours, go check the various scripts [here](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/pipelines). The preprocessing pipelines relies heavily on the bids format, which means if your data also are in bids, you should be able to use our pipelines without much tweaking. 
+- If you are interested in iEEG data analysis and you would like to see what are the different steps involved OR if you are interested in the COGITATE data and would like to get a sense of how to work with them, go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-data-release.ipynb)
+- If you have decided you would like to do something with the cogitate data, you should go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-single-subject-report.ipynb). It can be run on each subject to get an idea of channels localization, responses observed... You can also used this [script](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/batch_subjects_reports.py) to specify a set of subjects to generate reports for each of them as HTML
+- If you are a curious about the implementation of different functions we are using, you can go have a look at this [file](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg). It contains the cog_ieeg python package, in which the various custom functions we have created are organized.
+- If you have your own data and would like to use pipelines that are similar to ours, go check the various scripts [here](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg/pipelines). The preprocessing pipelines relies heavily on the bids format, which means if your data also are in bids, you should be able to use our pipelines without much tweaking. 
 
 My personal recommendation is to always start with this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/ieeg-single-subject-report.ipynb) as it gives a really good overview of how things work in general. 
 
@@ -79,6 +79,7 @@ If you use any the data for other purpose, you should cite the scientific data p
     <td align="center"><a href="https://github.com/pravsripad"><img src="https://avatars.githubusercontent.com/pravsripad?v=4" width="100px;" alt=""/><br /><sub><b>Praveen Sripad</b></sub></a><br /><a href="#doc-pravsripad" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/simonhenin"><img src="https://avatars.githubusercontent.com/simonhenin?v=4" width="100px;" alt=""/><br /     ><sub><b>Simon Henin</b></sub></a><br /><a href="#doc-simonhenin" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/KatBendtz"><img src="https://avatars.githubusercontent.com/KatBendtz?v=4" width="100px;" alt=""/><br /     ><sub><b>Katarina Bendtz</b></sub></a><br /><a href="#doc-KatBendtz" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/qian-chu"><img src="https://avatars.githubusercontent.com/qian-chu?v=4" width="100px;" alt=""/><br /     ><sub><b>Qian Chu</b></sub></a><br /><a href="#doc-qian-chu" title="Comments">💬</a></td>
   </tr>
 </table>
 
