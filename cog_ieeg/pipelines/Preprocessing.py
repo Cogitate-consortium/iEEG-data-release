@@ -7,7 +7,7 @@ from pathlib import Path
 from mne_bids import BIDSPath, read_raw_bids
 from cog_ieeg.localization import roi_mapping
 from cog_ieeg.vizualization import plot_channels_psd, plot_bad_channels, plot_electrode_localization
-from cog_ieeg.utils import mne_data_saver, get_pipeline_config
+from cog_ieeg.utils import mne_data_saver, get_pipeline_config, get_bids_root, get_fs_directory
 from cog_ieeg.processing import detrend_runs, custom_car, epoching, compute_hg, compute_erp, description_ch_rejection, \
     laplacian_referencing, notch_filtering
 
@@ -15,12 +15,11 @@ from cog_ieeg.processing import detrend_runs, custom_car, epoching, compute_hg, 
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 from cog_ieeg.xnat_utilities import xnat_download
-import environment_variables as ev
 
 # Fetch fsaverage:
-if not os.path.isdir(ev.fs_directory):
-    os.makedirs(ev.fs_directory)
-mne.datasets.fetch_fsaverage(subjects_dir=ev.fs_directory, verbose=None)
+if not os.path.isdir(get_fs_directory()):
+    os.makedirs(get_fs_directory())
+mne.datasets.fetch_fsaverage(subjects_dir=get_fs_directory(), verbose=None)
 
 SUPPORTED_STEPS = [
     "notch_filtering",
@@ -89,7 +88,7 @@ def run_preprocessing(param, subjects):
                 param = json.load(f)
 
         # Create path to save the data:
-        save_root = Path(ev.bids_root, 'derivatives', 'preprocessing',
+        save_root = Path(get_bids_root(), 'derivatives', 'preprocessing',
                          'sub-' + subject, 'ses-' + param["session"], param["data_type"])
         if not os.path.isdir(save_root):
             # Creating the directory:
@@ -102,7 +101,7 @@ def run_preprocessing(param, subjects):
         # Preparing the data:
         # --------------------------------------------------------------------------------------------------------------
         # Creating the bids path object:
-        bids_path = BIDSPath(root=ev.bids_root, subject=subject,
+        bids_path = BIDSPath(root=get_bids_root(), subject=subject,
                              session=param["session"],
                              datatype=param["data_type"],
                              task=param["task"])
@@ -295,7 +294,7 @@ def run_preprocessing(param, subjects):
                         # Performing the laplace referencing:
                         raw[signal], reference_mapping, bad_channels = \
                             laplacian_referencing(raw[signal], laplacian_mapping,
-                                                  subjects_dir=ev.fs_directory,
+                                                  subjects_dir=get_fs_directory(),
                                                   subject="sub-" + subject,
                                                   **step_parameters[signal])
                         # Saving the data:
@@ -425,12 +424,12 @@ def run_preprocessing(param, subjects):
                 # Check if the freesurfer folder is available
                 if montage.get_positions()['coord_frame'] == 'mri':
                     subject_free_surfer_dir = Path(
-                        ev.fs_directory, "sub-" + subject)
+                        get_fs_directory(), "sub-" + subject)
                     assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
                                                               "subject! Make sure to download it")
                 elif montage.get_positions()['coord_frame'] == 'mni_tal':
                     subject_free_surfer_dir = Path(
-                        ev.fs_directory, "fsaverage")
+                        get_fs_directory(), "fsaverage")
                     assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
                                                               "subject! Make sure to download it")
 
@@ -441,7 +440,7 @@ def run_preprocessing(param, subjects):
                         # Extract the anatomical labels:
                         electrodes_mapping_df = roi_mapping(raw["broadband"],
                                                             step_parameters[signal]["list_parcellations"],
-                                                            "sub-" + subject, ev.fs_directory, param, save_root, step,
+                                                            "sub-" + subject, get_fs_directory(), param, save_root, step,
                                                             signal, file_prefix, file_extension='mapping.csv')
 
                         # Get a list of the channels that are outside the brain:
@@ -466,7 +465,7 @@ def run_preprocessing(param, subjects):
                         # Doing the probabilistic mapping onto the different atlases:
                         # Extract the anatomical labels:
                         electrodes_mapping_df = roi_mapping(epochs["broadband"], step_parameters["list_parcellations"],
-                                                            "sub-" + subject, ev.fs_directory, param, save_root, step,
+                                                            "sub-" + subject, get_fs_directory(), param, save_root, step,
                                                             signal, file_prefix, file_extension='mapping.csv')
 
                         # Get a list of the channels that are outside the brain:
@@ -506,12 +505,12 @@ def run_preprocessing(param, subjects):
                 # Check if the freesurfer folder is available
                 if montage.get_positions()['coord_frame'] == 'mri':
                     subject_free_surfer_dir = Path(
-                        ev.fs_directory, "sub-" + subject)
+                        get_fs_directory(), "sub-" + subject)
                     assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
                                                               "subject! Make sure to download it")
                 elif montage.get_positions()['coord_frame'] == 'mni_tal':
                     subject_free_surfer_dir = Path(
-                        ev.fs_directory, "fsaverage")
+                        get_fs_directory(), "fsaverage")
                     assert subject_free_surfer_dir.is_dir(), ("The free surfer reconstruction is not available for this"
                                                               "subject! Make sure to download it")
 
@@ -520,12 +519,12 @@ def run_preprocessing(param, subjects):
                     # compatibility
                     if "raw" in locals():
                         # Plotting the electrodes localization on the brain surface
-                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, ev.fs_directory, param,
+                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, get_fs_directory(), param,
                                                     save_root, step, signal, file_prefix,
                                                     file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=False)
-                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, ev.fs_directory, param,
+                        plot_electrode_localization(raw["broadband"].copy(), 'sub-' + subject, get_fs_directory(), param,
                                                     save_root, step, signal, file_prefix,
                                                     file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
@@ -533,12 +532,12 @@ def run_preprocessing(param, subjects):
 
                     elif "epochs" in locals():
                         # Plotting the electrodes localization on the brain surface
-                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, ev.fs_directory,
+                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, get_fs_directory(),
                                                     param, save_root, step, signal, file_prefix,
                                                     file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
                                                     plot_elec_name=False)
-                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, ev.fs_directory,
+                        plot_electrode_localization(epochs["broadband"].copy(), 'sub-' + subject, get_fs_directory(),
                                                     param, save_root, step, signal, file_prefix,
                                                     file_extension='-loc.png',
                                                     channels_to_plot=step_parameters[signal]["channel_types"],
@@ -548,7 +547,7 @@ def run_preprocessing(param, subjects):
 if __name__ == "__main__":
     config_file = get_pipeline_config('preprocessing')
     import pandas as pd
-    subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
+    subjects = pd.read_csv(Path(get_bids_root(), "participants.tsv"), sep='\t')["participant_id"].to_list()
     subjects = ["CF102"] # , "CF104", "CF105", "CF106"]
     for sub in subjects:
         run_preprocessing(config_file, sub)

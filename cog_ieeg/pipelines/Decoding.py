@@ -12,8 +12,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 from mne.decoding import (GeneralizingEstimator, cross_val_multiscore)
 
 from cog_ieeg.processing import baseline_scaling
-from cog_ieeg.utils import get_pipeline_config
-import environment_variables as ev
+from cog_ieeg.utils import get_pipeline_config, get_bids_root
 
 
 def run_decoding(param, subjects):
@@ -42,10 +41,10 @@ def run_decoding(param, subjects):
                 param = json.load(f)
 
         # Create path to save the data:
-        save_root_results = Path(ev.bids_root, 'derivatives', 'decoding',
+        save_root_results = Path(get_bids_root(), 'derivatives', 'decoding',
                                  'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                                  param["signal"], "results")
-        save_root_figures = Path(ev.bids_root, 'derivatives', 'decoding',
+        save_root_figures = Path(get_bids_root(), 'derivatives', 'decoding',
                                  'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                                  param["signal"], "figures")
         if not os.path.isdir(save_root_results):
@@ -61,7 +60,7 @@ def run_decoding(param, subjects):
         # ======================================================================================================
         # Load and prepare the data:
         # Set path to the data:
-        epochs_file = Path(ev.bids_root, 'derivatives', 'preprocessing',
+        epochs_file = Path(get_bids_root(), 'derivatives', 'preprocessing',
                            'sub-' + subject, 'ses-' + param["session"], param["data_type"],
                            "epoching", param["signal"],
                            "sub-{}_ses-{}_task-{}_desc-epoching_{}-epo.fif".format(subject,
@@ -180,7 +179,7 @@ def run_decoding(param, subjects):
         subjects_scores.append(np.mean(scores, axis=0))
 
     # Save all subjects results in a separate directory:
-    save_root_results = Path(ev.bids_root, 'derivatives', 'decoding',
+    save_root_results = Path(get_bids_root(), 'derivatives', 'decoding',
                              'sub-' + "all", 'ses-' + param["session"], param["data_type"],
                              param["signal"], "results")
     if not os.path.isdir(save_root_results):
@@ -195,6 +194,6 @@ def run_decoding(param, subjects):
 
 
 if __name__ == "__main__":
-    config_file = get_dft_config(r"decoding_config-default.json")
+    config_file = get_pipeline_config("decoding")
     subjects_list = ["SF102"]
     run_decoding(config_file, subjects_list)

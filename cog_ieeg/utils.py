@@ -103,6 +103,14 @@ def set_bids_root(new_path, update_fs_dir=True):
     return None
 
 
+def set_fs_directory(fs_directory):
+    with open(get_config_path('config-path.json'), 'r') as configfile:
+        config = json.load(configfile)
+    config['XNAT']['fs_directory'] = fs_directory
+    save_config(config, get_config_path('config-path.json'))
+    return None
+
+
 def set_xnat_host(xnat_host):
     with open(get_config_path('config-path.json'), 'r') as configfile:
         config = json.load(configfile)
@@ -123,6 +131,12 @@ def get_bids_root():
     with open(get_config_path('config-path.json'), 'r') as configfile:
         config = json.load(configfile)
     return config['Paths']['bids_root']
+
+
+def get_fs_directory():
+    with open(get_config_path('config-path.json'), 'r') as configfile:
+        config = json.load(configfile)
+    return config['Paths']['fs_directory']
 
 
 def get_xnat_host():
