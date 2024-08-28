@@ -12,7 +12,7 @@ from sklearn.feature_selection import SelectKBest, f_classif
 from mne.decoding import (GeneralizingEstimator, cross_val_multiscore)
 
 from cog_ieeg.processing import baseline_scaling
-from cog_ieeg.utils import get_dft_config
+from cog_ieeg.utils import get_pipeline_config
 import environment_variables as ev
 
 
