@@ -8,5 +8,5 @@ fs_directory = Path(bids_root, 'derivatives', 'fs') # Change only if you have yo
 # ===============================================================
 # Don't touch
 # xnat parameters:
-xnat_host = 'xnat-curate'
-xnat_project = 'COG_IEEG_EXP1_BIDS_SAMPLE'
+xnat_host = 'cogitate-data'
+xnat_project = 'COG_IEEG_EXP1'
