@@ -4,7 +4,7 @@ import os
 import getpass
 import shutil
 import os.path as op
-from environment_variables import bids_root, xnat_host, xnat_project
+from cog_ieeg.utils import get_bids_root, get_xnat_host, get_xnat_project
 
 
 def move_dir_contents(source_dir, destination_dir):
@@ -39,9 +39,9 @@ def xnat_download(subjects_to_download, to=None, overwrite=False):
     :param overwrite: Flag to overwrite existing data.
     """
     if to is None:
-        to = bids_root
+        to = get_bids_root()
         
-    if not isinstance(xnat_project, str):
+    if not isinstance(get_xnat_project(), str):
         print('project not provided or wrong type provided, must be a string.')
         sys.exit(1)
     
@@ -61,26 +61,26 @@ def xnat_download(subjects_to_download, to=None, overwrite=False):
         user = input("Enter your XNAT user name: ")
         password = getpass.getpass("Enter your XNAT password: ")
         try:
-            session = xnat.connect(f'https://{xnat_host}.ae.mpg.de', user=user, password=password)
+            session = xnat.connect(f'https://{get_xnat_host()}.ae.mpg.de', user=user, password=password)
             break  # Exit the loop if the connection is successful
         except xnat.exceptions.XNATError as e:
             print("Login failed: " + str(e))
             print("Please try again.")
 
-    project = session.projects.get(xnat_project)
+    project = session.projects.get(get_xnat_project())
     if not project:
-        print(f'Project {xnat_project} not found.')
+        print(f'Project {get_xnat_project()} not found.')
         sys.exit(1)
 
     # --------------------------------------------------------------------------------
     # Project level data:
     if overwrite or not os.path.isfile(op.join(to, "dataset_description.json")):
-        proj_bids_root = op.join(to, xnat_project, 'resources', 'bids', 'files')
+        proj_bids_root = op.join(to, get_xnat_project(), 'resources', 'bids', 'files')
         project.resources['bids'].download_dir(to)
         move_dir_contents(proj_bids_root, to)
-        shutil.rmtree(op.join(to, xnat_project))
+        shutil.rmtree(op.join(to, get_xnat_project()))
     else:
-        print(f'The project data of {xnat_project} are already present on your computer.')
+        print(f'The project data of {get_xnat_project()} are already present on your computer.')
         print(f'Set overwrite to true if you wish to overwrite them.')
 
     # --------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ def xnat_download(subjects_to_download, to=None, overwrite=False):
         subjects_to_download = subjects_in_project
 
     if not all([subj in subjects_in_project for subj in subjects_to_download]):
-        print(f'Subjects {subjects_to_download} not found in project {xnat_project}.')
+        print(f'Subjects {subjects_to_download} not found in project {get_xnat_project()}.')
         sys.exit(1)
     # Download single subjects data:
     for subject in subjects_to_download:
@@ -98,7 +98,7 @@ def xnat_download(subjects_to_download, to=None, overwrite=False):
         subj_bids_root = op.join(to, subject, 'resources', 'bids', 'files')
 
         if overwrite or not os.path.isdir(op.join(to, subject)):
-            session.projects.get(xnat_project).subjects.get(subject).resources['bids'].download_dir(to)
+            session.projects.get(get_xnat_project()).subjects.get(subject).resources['bids'].download_dir(to)
             move_dir_contents(subj_bids_root, to)
             shutil.rmtree(op.join(to, subject, 'resources'))
         else:
