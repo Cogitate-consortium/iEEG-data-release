@@ -1,12 +1,12 @@
 import os
 import pandas as pd
 from pathlib import Path
-import environment_variables as ev
 import papermill as pm
 from nbconvert import HTMLExporter
 import nbformat
 import shutil
 import sys
+from cog_ieeg.utils import get_bids_root
 # Add the parent directory to sys.path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
@@ -60,7 +60,7 @@ def subject_report_html(subject_id):
 
 
 if __name__ == "__main__":
-    subjects = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')["participant_id"].to_list()
+    subjects = pd.read_csv(Path(get_bids_root(), "participants.tsv"), sep='\t')["participant_id"].to_list()
     # Download the data if necessary:
     xnat_download(['sub-' + sub for sub in subjects], overwrite=False)
     for subject in subjects:
