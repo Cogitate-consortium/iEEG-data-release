@@ -63,9 +63,6 @@ def get_data_directory():
         data_dir = Path.home() / "Library" / "Documents" / "COGITATE"
     else:  # Assume Linux or other UNIX-like systems
         data_dir = Path.home() / ".local" / "share"
-
-    # Create the directory if it doesn't exist
-    data_dir.mkdir(parents=True, exist_ok=True)
     
     return data_dir
 
