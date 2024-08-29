@@ -1,4 +1,4 @@
-name: cog_ieeg_release_v2
+name: cog_ieeg_release
 channels:
   - conda-forge
   - defaults
