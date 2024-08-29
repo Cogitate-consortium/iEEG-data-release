@@ -195,12 +195,12 @@ def save_param(param, save_path, step, signal, file_prefix, file_extension):
     config_file_name = Path(save_path, '{}_desc-{}_ieeg{}.json'.format(file_prefix, step,
                                                                        file_extension.split('.')[0]))
     with open(str(config_file_name), 'w') as outfile:
-        json.dump(param[step][signal], outfile)
+        json.dump(param[step][signal], outfile, indent=4)
     # Saving the entire config file as well:
     config_file_name = Path(save_path, '{}_desc-{}_ieeg{}.json'.format(file_prefix, 'all',
                                                                        file_extension.split('.')[0]))
     with open(str(config_file_name), 'w') as outfile:
-        json.dump(param, outfile)
+        json.dump(param, outfile, indent=4)
 
     return None
 
