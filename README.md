@@ -22,15 +22,14 @@ First, you should install the environment and activate it. This may be done as s
 
 ### 
 
-Then, you should adjust the path configuration in the environment_variable.py by setting the bids root to the local path where you would like to store your data:
+By default, the data will be downloaded in your home directory, under COGITATE/bids. If you wish to change this default parameter, you can adjust it with python:
 
 ```
-bids_root = "YOUR/LOCAL/PATH"
+from cog_ieeg.utils import set_bids_root
+set_bids_root"YOUR/LOCAL/PATH"()
 ```
 
-That's the only setup you need to do.
-
-You don't need to download any data manually, has we have automated download implemented. You should only register to our database [here](https://www.arc-cogitate.com/data-release) to get your credentials. You will simply need to specify the name of the subject you would like to download, input your credentials and the data will get downloaded on your machine. 
+This step is optional, everything else is ready to go. You also don't need to download any data manually, has we have automated download implemented. You should only register to our database [here](https://www.arc-cogitate.com/data-release) to get your credentials. You will simply need to specify the name of the subject you would like to download, input your credentials and the data will get downloaded on your machine. 
 
 ## How to use this repository:
 This repository contains jupyter notebooks, analysis pipelines and many different functions. Depending on your interest, here are the different places to go to first:
