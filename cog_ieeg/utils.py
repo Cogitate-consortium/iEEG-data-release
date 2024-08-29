@@ -20,7 +20,7 @@ import platform
 from pathlib import Path
 import importlib.resources as pkg_resources
 
-_KNOWN_PIPELINES = ('preprocessing', 'onset_responsiveness', 'decoding')
+_KNOWN_PIPELINES = ('preprocessing', 'preprocessing-doc', 'onset_responsiveness', 'decoding')
 
 
 def get_config_path(config_name):
