@@ -1,3 +1,17 @@
+"""
+This module provides a pipeline to apply decoding analysis to iEEG data of single subjects based on a set of parameters
+
+Author:
+-------
+Alex Lepauvre
+Katarina Bendtz
+Simon Henin
+
+License:
+--------
+This code is licensed under the MIT License.
+"""
+
 import json
 import os
 from pathlib import Path
@@ -16,6 +30,22 @@ from cog_ieeg.utils import get_pipeline_config, get_bids_root
 
 
 def run_decoding(param, subjects):
+    """
+    Run the decoding analysis on iEEG data for the specified subjects.
+
+    Parameters
+    ----------
+    param : dict or str
+        Configuration parameters for the decoding analysis. If a string is provided, it should be a path to a JSON file
+        containing the parameters.
+    subjects : str or list of str
+        List of subject IDs to analyze. If a single subject ID is provided as a string, it will be converted to a list.
+
+    Returns
+    -------
+    subjects_scores : list
+        List of decoding scores for each subject.
+    """
     print("=" * 80)
     print("Welcome to Decoding!")
     print("The onset responsive channels of the following subjects will be determined: ")
@@ -85,7 +115,7 @@ def run_decoding(param, subjects):
 
         # ======================================================================================================
         # Prepare the classifier:
-        # initialize classifier pipeline
+        # Initialize classifier pipeline
         clf_steps = []
         if param['scaler']:
             clf_steps.append(StandardScaler())
@@ -101,11 +131,11 @@ def run_decoding(param, subjects):
         # ======================================================================================================
         # Run the classifier:
         if param["train_group"] == param["test_group"]:
-            # Checking that the cross fold validation is set to true:
+            # Checking that cross-fold validation is set to true:
             if param["n_folds"] is None:
-                raise Exception("If you are doing within task decoding, you must use cross fold validation to be able"
+                raise Exception("If you are doing within task decoding, you must use cross-fold validation to be able"
                                 "\nto test your trained decoding on something!")
-            print("Decoding {} with {} folds stratified cross validation:".format(param["decoding_target"],
+            print("Decoding {} with {} folds stratified cross-validation:".format(param["decoding_target"],
                                                                                   param["n_folds"]))
             # Extract the data:
             data = epochs.get_data(copy=True)
@@ -124,11 +154,11 @@ def run_decoding(param, subjects):
             # Train the classifier:
             time_gen.fit(X=x_train, y=y_train)
 
-            # Extract the training data:
+            # Extract the test data:
             test_epochs = epochs[param["test_condition"]].get_data()
             x_test = test_epochs.get_data()
             y_test = test_epochs.metadata[param["decoding_target"]].values
-            # Test the classifier (i.e. generalization):
+            # Test the classifier (i.e., generalization):
             scores = time_gen.score(X=x_test, y=y_test)
 
         # ======================================================================================================
@@ -158,7 +188,7 @@ def run_decoding(param, subjects):
         plt.savefig(fig_file)
         plt.close()
 
-        # Plot the time resolved decoding (i.e. the diagonal)
+        # Plot the time-resolved decoding (i.e., the diagonal)
         fig, ax = plt.subplots()
         ax.plot(epochs.times, np.diag(np.mean(scores, axis=0)))
         ax.set_xlim([epochs.times[0], epochs.times[-1]])
@@ -178,7 +208,7 @@ def run_decoding(param, subjects):
         # Append to the rest:
         subjects_scores.append(np.mean(scores, axis=0))
 
-    # Save all subjects results in a separate directory:
+    # Save all subjects' results in a separate directory:
     save_root_results = Path(get_bids_root(), 'derivatives', 'decoding',
                              'sub-' + "all", 'ses-' + param["session"], param["data_type"],
                              param["signal"], "results")

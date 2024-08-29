@@ -34,17 +34,30 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
     """
     Plot and save the power spectral density (PSD) of chosen electrodes.
 
-    :param raw: mne raw object
-    :param save_root: string or path object, path to where the data should be saved
-    :param step: string, name of the preprocessing step
-    :param signal: string, name of the signal being saved
-    :param file_prefix: string, prefix of the file to save
-    :param file_extension: string, file name extension
-    :param plot_single_channels: boolean, whether to plot single channels or only all of them superimposed
-    :param channels_type: dict, list of the channels of interest
-    :return: None
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data.
+    save_root : str or pathlib.Path
+        Path to where the data should be saved.
+    step : str
+        Name of the preprocessing step.
+    signal : str
+        Name of the signal being saved.
+    file_prefix : str
+        Prefix of the file to save.
+    file_extension : str, optional
+        File name extension, by default "-psd.png".
+    plot_single_channels : bool, optional
+        Whether to plot single channels or only all of them superimposed, by default False.
+    channels_type : dict, optional
+        Dictionary specifying the channels of interest, by default None.
+
+    Returns
+    -------
+    None
     """
-    # Getting  the relevant channels:
+    # Getting the relevant channels:
     if channels_type is None:
         channels_type = {"ecog": True, "seeg": True}
     picks = mne.pick_types(raw.info, **channels_type)
@@ -56,7 +69,7 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
     full_file_name = Path(save_path, '{}_desc-{}_ieeg{}'.format(file_prefix, step, file_extension))
 
     # ==========================================================
-    # Plotting the psd from all the channels:
+    # Plotting the PSD from all the channels:
     raw.plot_psd(picks=picks, show=False)
     # Saving the figure:
     plt.savefig(full_file_name, dpi=300, transparent=True)
@@ -78,17 +91,30 @@ def plot_channels_psd(raw, save_root, step, signal, file_prefix,
 def plot_bad_channels(raw, save_root, step, signal, file_prefix,
                       file_extension="bads.png", plot_single_channels=False, picks="bads"):
     """
-    Plot the bad channels PSD and raw signal to show what is being discarded.
+    Plot the bad channels' PSD and raw signal to show what is being discarded.
 
-    :param raw: mne raw object
-    :param save_root: string or path object, path to where the data should be saved
-    :param step: string, name of the preprocessing step
-    :param signal: string, name of the signal being saved
-    :param file_prefix: string, prefix of the file to save
-    :param file_extension: string, file name extension
-    :param plot_single_channels: boolean, whether to plot single channels or only all of them superimposed
-    :param picks: list, list of the channels of interest
-    :return: None
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data.
+    save_root : str or pathlib.Path
+        Path to where the data should be saved.
+    step : str
+        Name of the preprocessing step.
+    signal : str
+        Name of the signal being saved.
+    file_prefix : str
+        Prefix of the file to save.
+    file_extension : str, optional
+        File name extension, by default "bads.png".
+    plot_single_channels : bool, optional
+        Whether to plot single channels or only all of them superimposed, by default False.
+    picks : list or str, optional
+        List of channels of interest or "bads" to plot bad channels, by default "bads".
+
+    Returns
+    -------
+    None
     """
     # Handling picks input:
     if picks == "bads":
@@ -101,7 +127,7 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
     full_file_name = Path(save_path, '{}_desc-{}_ieeg{}'.format(file_prefix, step, file_extension))
 
     if len(picks) > 0:
-        # Plotting the psd from all the channels:
+        # Plotting the PSD from all the channels:
         fig, axs = plt.subplots(1, 1)
         plt.suptitle("Bad channels: N= " + str(len(picks))
                      + " out of " + str(len(raw.info["ch_names"])))
@@ -123,16 +149,16 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
         axs.set_xlabel("time (s)")
         axs.set_ylabel("amplitude")
         axs.legend()
-        # Plotting the psd
+        # Plotting the PSD
         # raw.plot_psd(picks=picks, show=False, ax=axs[1:2])
         # Saving the figure:
         plt.savefig(full_file_name, transparent=True)
         plt.close()
         # For all channels separately:
         if plot_single_channels:
-            # Looping through each channels:
+            # Looping through each channel:
             for pick in picks:
-                # Plotting the psd from this channel:
+                # Plotting the PSD from this channel:
                 fig, axs = plt.subplots(2, 1)
                 axs[0].plot(times, mean_good_data, alpha=0.5, color="black")
                 axs[0].fill_between(times, mean_good_data - ste_good_data, mean_good_data + ste_good_data,
@@ -146,7 +172,7 @@ def plot_bad_channels(raw, save_root, step, signal, file_prefix,
                 axs[0].set_xlabel("time (s)")
                 axs[0].set_ylabel("amplitude")
                 axs[0].legend()
-                # Plotting the psd
+                # Plotting the PSD
                 raw.plot_psd(picks=pick, show=False, ax=axs[1])
                 full_file_name = Path(save_path, '{}_desc-{}_ieeg-{}{}'.format(file_prefix, step,
                                                                                raw.ch_names[pick], file_extension))
@@ -162,18 +188,34 @@ def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, s
     """
     Plot and save the electrode localization.
 
-    :param mne_object: mne object (raw, epochs, evoked...), contains the mne object with the channels info
-    :param subject: string, subject ID
-    :param fs_dir: string or path object, freesurfer directory containing the subject's data
-    :param param: dict, contains analysis parameters
-    :param save_root: string, directory to save the figures
-    :param step: string, name of the analysis step for saving the parameters
-    :param signal: string, name of the signal
-    :param file_prefix: string, prefix for file saving
-    :param file_extension: string, ending of the file name
-    :param channels_to_plot: list, contains the different channels to plot
-    :param plot_elec_name: string, whether or not to print the electrodes names onto the snapshot
-    :return: None
+    Parameters
+    ----------
+    mne_object : mne.io.Raw | mne.Epochs | mne.Evoked
+        The MNE object containing the data and channel info.
+    subject : str
+        Subject ID.
+    fs_dir : str or pathlib.Path
+        FreeSurfer directory containing the subject's data.
+    param : dict
+        Dictionary containing analysis parameters.
+    save_root : str
+        Directory to save the figures.
+    step : str
+        Name of the analysis step for saving the parameters.
+    signal : str
+        Name of the signal.
+    file_prefix : str
+        Prefix for file saving.
+    file_extension : str, optional
+        File name extension, by default '-loc.png'.
+    channels_to_plot : list, optional
+        List of channel types to plot, by default None.
+    plot_elec_name : bool, optional
+        Whether or not to print the electrode names onto the snapshot, by default False.
+
+    Returns
+    -------
+    None
     """
     if channels_to_plot is None:
         channels_to_plot = ["ecog", "seeg"]
@@ -184,7 +226,7 @@ def plot_electrode_localization(mne_object, subject, fs_dir, param, save_root, s
     save_path = Path(save_root, step, signal)
     path_generator(save_path)
 
-    # Adding the estimated fiducials and compute the transformation to head:
+    # Adding the estimated fiducials and computing the transformation to head:
     montage, trans = add_fiducials(mne_object.get_montage(), fs_dir, subject)
     mne_object.set_montage(montage, on_missing="warn")
 
@@ -247,12 +289,20 @@ def count_colors(values, cmap):
     """
     Count the number of entries for each value and map them to colors.
 
-    :param values: list of values
-    :param cmap: string, name of the colormap
-    :return: dict, mapping keys to RGB colors
+    Parameters
+    ----------
+    values : list
+        List of values.
+    cmap : str
+        Name of the colormap.
+
+    Returns
+    -------
+    dict
+        Mapping of keys to RGB colors.
     """
     from collections import Counter
-    # Count the number of entries for each values:
+    # Count the number of entries for each value:
     counts = dict(Counter(values))
 
     # Get the list of counts from the dictionary
@@ -278,13 +328,21 @@ def count_colors(values, cmap):
 
 def get_cmap_rgb_values(values, cmap=None, center=None):
     """
-    Get RGB values for a list of values mapping onto a specified color bar. If a midpoint is set,
-    the color bar will be normalized accordingly.
+    Get RGB values for a list of values mapping onto a specified colormap.
 
-    :param values: list of floats, list of values for which to obtain a color map
-    :param cmap: string, name of the colormap
-    :param center: float, value on which to center the colormap
-    :return: list of rgb triplets, color for each passed value
+    Parameters
+    ----------
+    values : list of float
+        List of values for which to obtain a color map.
+    cmap : str, optional
+        Name of the colormap, by default None.
+    center : float, optional
+        Value on which to center the colormap, by default None.
+
+    Returns
+    -------
+    list of tuple
+        List of RGB triplets representing the color for each value.
     """
     if cmap is None:
         cmap = "RdYlBu_r"
@@ -302,46 +360,44 @@ def plot_ieeg_image(epo, channel, order=None, show=False, units="HGP (norm.)", s
                     center=1, ylim_prctile=95, logistic_cmap=True, ci=0.95, evk_method="mean", ci_method="mean",
                     evk_colors="k", vlines_s=0):
     """
-    Plot an iEEG (intracranial EEG) image with the option to use logistic normalization for the colormap,
-    including confidence intervals and evoked responses.
+    Plot an iEEG image with logistic normalization, confidence intervals, and evoked responses.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     epo : mne.Epochs
         The MNE Epochs object containing the data to be plotted.
     channel : str
         The name of the channel to plot.
-    order : array-like | None
-        If not None, reorder the images by this array. Default is None.
+    order : array-like or None, optional
+        If not None, reorder the images by this array, by default None.
     show : bool, optional
-        Whether to display the figure immediately. Default is False.
+        Whether to display the figure immediately, by default False.
     units : str, optional
-        The unit label for the y-axis. Default is "HGP (norm.)".
+        The unit label for the y-axis, by default "HGP (norm.)".
     scalings : float, optional
-        Scaling factor for the data. Default is 1.
-    cmap : str or None, optional
-        Colormap for the image. Default is "RdYlBu_r". If None, uses the default colormap.
-    center : float or None, optional
-        Center value for the color normalization (used for symmetric data). Default is 1.
-        If None, no centering is applied. Is overriden by logistic_cmap if activated
+        Scaling factor for the data, by default 1.
+    cmap : str, optional
+        Colormap for the image, by default "RdYlBu_r".
+    center : float, optional
+        Center value for color normalization, by default 1.
     ylim_prctile : float or list of floats, optional
-        Percentile(s) to define the y-axis limits. Default is 95.
-        If an integer is provided, it defines both upper and lower limits symmetrically.
+        Percentile(s) to define the y-axis limits, by default 95.
     logistic_cmap : bool, optional
-        Whether to apply logistic mapping to the colormap to emphasize the data's dynamic range.
-        Default is True.
+        Whether to apply logistic mapping to the colormap, by default True.
     ci : float, optional
-        Confidence interval percentage. Default is 0.95 (95% confidence interval).
+        Confidence interval percentage, by default 0.95.
     evk_method : str, optional
-        Method to compute the evoked response. Default is "mean".
+        Method to compute the evoked response, by default "mean".
     ci_method : str, optional
-        Method to compute the confidence interval. Default is "mean".
+        Method to compute the confidence interval, by default "mean".
     evk_colors : str, optional
-        Color for the evoked response plot. Default is "k" (black).
+        Color for the evoked response plot, by default "k".
+    vlines_s : float or int or list of floats or ints, optional
+        Vertical lines to plot on the x-axis, by default 0.
 
-    Returns:
-    --------
-    figs : list
+    Returns
+    -------
+    list
         A list of figures generated by the plot.
     """
 

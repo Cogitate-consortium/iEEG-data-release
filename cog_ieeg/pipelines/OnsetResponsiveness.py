@@ -1,3 +1,17 @@
+"""
+This module provides a pipeline to apply onset responsiveness analysis to iEEG data of single subjects based on a set of parameters
+
+Author:
+-------
+Alex Lepauvre
+Katarina Bendtz
+Simon Henin
+
+License:
+--------
+This code is licensed under the MIT License.
+"""
+
 import json
 import os
 from pathlib import Path
@@ -14,6 +28,25 @@ from cog_ieeg.utils import get_pipeline_config, get_bids_root
 
 def run_onset_responsiveness(param, subjects,
                              plot_single_channels=True, plot_only_responsive=True):
+    """
+    Run onset responsiveness analysis on iEEG data for the specified subjects.
+
+    Parameters
+    ----------
+    param : dict or str
+        Configuration parameters for the onset responsiveness analysis. If a string is provided, it should be a path to a JSON file containing the parameters.
+    subjects : str or list of str
+        List of subject IDs to analyze. If a single subject ID is provided as a string, it will be converted to a list.
+    plot_single_channels : bool, optional
+        Whether to plot each channel's response separately. Default is True.
+    plot_only_responsive : bool, optional
+        Whether to plot only channels that are statistically significant. Default is True.
+
+    Returns
+    -------
+    all_results : pandas.DataFrame
+        DataFrame containing the onset responsiveness results for all subjects.
+    """
     print("=" * 80)
     print("Welcome to Onset Responsiveness!")
     print("The onset responsive channels of the following subjects will be determined: ")
@@ -56,7 +89,7 @@ def run_onset_responsiveness(param, subjects,
         file_prefix = 'sub-{}_ses-{}_task-{}_desc-{}-{}'.format(subject, param["session"],
                                                                 param["task"], "on_resp", param["data_type"])
 
-        # Pre-allocate to store this subject results:
+        # Pre-allocate to store this subject's results:
         subject_results = []
 
         # ======================================================================================================
@@ -111,10 +144,9 @@ def run_onset_responsiveness(param, subjects,
                 raise Exception("The metric passed is not supported, must be either mean, auc or ptp, check spelling!")
 
             # Test for statistical difference:
-            ttest(ch_prestim, ch_poststim, paired=True, r=0.707, alternative='two-sided').round(3)
             ch_res = ttest(ch_prestim, ch_poststim, paired=True, r=0.707, alternative='two-sided').round(3)
 
-            # Store the results in a dataframe:
+            # Store the results in a DataFrame:
             subject_results.append(pd.DataFrame({
                 "subject": subject,
                 "channel": "-".join([subject, ch]),
@@ -158,7 +190,7 @@ def run_onset_responsiveness(param, subjects,
                 plt.savefig(fig_file)
                 plt.close()
 
-            # Then unsignificant ones:
+            # Then non-significant ones:
             if not plot_only_responsive:
                 non_sig_channels = subject_results.loc[subject_results["reject"] == False, "channel"].to_list()
                 non_sig_root = Path(save_root_figures, "non_sig")
@@ -173,7 +205,7 @@ def run_onset_responsiveness(param, subjects,
                     plt.savefig(fig_file)
                     plt.close()
 
-    # Save all subjects results in the same directory:
+    # Save all subjects' results in the same directory:
     save_root_results = Path(get_bids_root(), 'derivatives', 'onset_responsiveness',
                              'sub-' + "all", 'ses-' + param["session"], param["data_type"],
                              param["signal"], "results")

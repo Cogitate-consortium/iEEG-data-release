@@ -34,10 +34,21 @@ def add_fiducials(montage, fs_directory, subject_id):
     """
     Add the estimated fiducials to the montage and compute the transformation.
 
-    :param montage: mne raw object, data to which the fiducials should be added
-    :param fs_directory: path string, path to the freesurfer directory
-    :param subject_id: string, name of the subject
-    :return: mne raw object and transformation
+    Parameters
+    ----------
+    montage : mne.channels.DigMontage
+        Data to which the fiducials should be added.
+    fs_directory : str
+        Path to the FreeSurfer directory.
+    subject_id : str
+        Name of the subject.
+
+    Returns
+    -------
+    mne.channels.DigMontage
+        The montage with added fiducials.
+    str or mne.transforms.Transform
+        The transformation matrix or identifier.
     """
     # If the coordinates are in mni_tal coordinates:
     if montage.get_positions()['coord_frame'] == "mni_tal":
@@ -63,10 +74,19 @@ def project_elec_to_surf(raw, subjects_dir, subject):
     """
     Project surface electrodes onto the brain surface to avoid having them floating.
 
-    :param raw: mne raw object
-    :param subjects_dir: path or string, path to the freesurfer subject directory
-    :param subject: string, name of the subject
-    :return: mne raw object
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data.
+    subjects_dir : str or pathlib.Path
+        Path to the FreeSurfer subject directory.
+    subject : str
+        Name of the subject.
+
+    Returns
+    -------
+    mne.io.Raw
+        The raw data with electrodes projected onto the brain surface.
     """
     # Loading the left and right pial surfaces:
     if raw.get_montage().get_positions()['coord_frame'] == "mri":
@@ -133,13 +153,23 @@ def project_elec_to_surf(raw, subjects_dir, subject):
 
 def project_montage_to_surf(montage, channel_types, subject, fs_dir):
     """
-    Project the electrodes to the pial surface. Note that this is only ever done on the ecog channels.
+    Project the electrodes to the pial surface. Note that this is only ever done on the ECoG channels.
 
-    :param montage: mne DigMontage object, montage to project
-    :param channel_types: dict, dictionary specifying channel types
-    :param subject: string, name of the subject
-    :param fs_dir: path or string, path to the freesurfer directory
-    :return: mne DigMontage object, updated montage
+    Parameters
+    ----------
+    montage : mne.channels.DigMontage
+        The montage to project.
+    channel_types : dict
+        Dictionary specifying channel types.
+    subject : str
+        Name of the subject.
+    fs_dir : str or pathlib.Path
+        Path to the FreeSurfer directory.
+
+    Returns
+    -------
+    mne.channels.DigMontage
+        The updated montage with electrodes projected onto the brain surface.
     """
     # Read the surfaces:
     left_surf = read_geometry(str(Path(fs_dir, subject, "surf", "lh.pial")))
@@ -186,15 +216,22 @@ def project_montage_to_surf(montage, channel_types, subject, fs_dir):
 
 def create_montage(channels, bids_path, fsaverage_dir):
     """
-    Fetch the MNI coordinates of a set of channels from the bids directory directly.
+    Fetch the MNI coordinates of a set of channels from the BIDS directory.
 
-    :param channels: list of channel names to fetch MNI coordinates for. The name of the channels must follow the naming convention:
-    $SUBID-$Channel_name, so CF102-G1 for example
-    :param bids_path: mne_bids BIDSPath object with information to fetch coordinates
-    :param fsaverage_dir: path to the FreeSurfer root folder containing the fsaverage
-    :return: mne.Info object with channel info, including positions in MNI space
+    Parameters
+    ----------
+    channels : list of str
+        List of channel names to fetch MNI coordinates for.
+    bids_path : mne_bids.BIDSPath
+        BIDSPath object with information to fetch coordinates.
+    fsaverage_dir : str
+        Path to the FreeSurfer root folder containing the fsaverage.
+
+    Returns
+    -------
+    mne.Info
+        Info object with channel info, including positions in MNI space.
     """
-
     # Extract unique subjects from the channels list
     subjects = list(set(channel.split('-')[0] for channel in channels))
 
@@ -249,16 +286,24 @@ def create_montage(channels, bids_path, fsaverage_dir):
 
 def get_roi_channels(channels, rois, bids_path, atlas):
     """
-    Get channels that are in a particular set of ROIs. This functions relies on the labels of each channel being found
-    in csv table located in the bids directory of each single participant.
+    Get channels that are in a particular set of ROIs.
 
-    :param channels: list of string, list of channels
-    :param rois: list of strings, list of ROIs with names matching the labels of a particular atlas
-    :param bids_path: mne bids path object
-    :param atlas: string, name of the atlas of interest
-    :return: list of string, list of channels found within the region of interest
+    Parameters
+    ----------
+    channels : list of str
+        List of channels.
+    rois : list of str
+        List of ROIs with names matching the labels of a particular atlas.
+    bids_path : mne_bids.BIDSPath
+        BIDSPath object pointing to the subject's BIDS directory.
+    atlas : str
+        Name of the atlas of interest.
+
+    Returns
+    -------
+    list of str
+        List of channels found within the region of interest.
     """
-
     # Load the atlas of that particular subject:
     atlas_file = Path(bids_path.root,
                       'sub-' + bids_path.subject, 'ses-' + bids_path.session, bids_path.datatype,
@@ -271,10 +316,10 @@ def get_roi_channels(channels, rois, bids_path, atlas):
         try:
             channel_labels = atlas_df.loc[atlas_df['channel'] == channel, 'region'].values[0].split('/')
         except AttributeError:
-            print('WARNING: No loc for {}'.format(channel))
+            print(f'WARNING: No loc for {channel}')
             continue
         except IndexError:
-            print('WARNING: {} not found in channels localization file'.format(channel))
+            print(f'WARNING: {channel} not found in channels localization file')
         # Remove ctx l and r
         channel_labels = [lbl.replace('ctx_lh_', '').replace('ctx_rh_', '') for lbl in channel_labels]
         # Check whether any of the channel label is within the list of rois:
@@ -290,10 +335,19 @@ def mri_2_mni(montage, subject, fs_dir):
     """
     Convert MRI coordinates to MNI coordinates using the Talairach transform.
 
-    :param montage: mne DigMontage object
-    :param subject: string, subject ID
-    :param fs_dir: path or string, path to the freesurfer directory
-    :return: dict, MNI positions
+    Parameters
+    ----------
+    montage : mne.channels.DigMontage
+        The montage containing electrode positions in MRI coordinates.
+    subject : str
+        Subject ID.
+    fs_dir : str or pathlib.Path
+        Path to the FreeSurfer directory.
+
+    Returns
+    -------
+    dict
+        Dictionary with MNI positions of electrodes.
     """
     # Add the fiducials: ras -> mri:
     # montage, trans = add_fiducials(montage, fs_dir, subject)
@@ -313,19 +367,34 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, param, save_roo
     """
     Map the electrodes on different atlases.
 
-    :param mne_object: mne raw or epochs object, object containing the montage to extract the roi
-    :param list_parcellations: list of string, list of the parcellation files to use for the mapping
-    :param subject: string, name of the subject to access the fs recon
-    :param fs_dir: string or path object, path to the freesurfer directory containing all the participants
-    :param param: dictionary, parameters used to generate the data
-    :param save_root: string or path object, path to where the data should be saved
-    :param step: string, name of the preprocessing step
-    :param signal: string, name of the signal being saved
-    :param file_prefix: string, prefix of the file to save
-    :param file_extension: string, file name extension
-    :return: dict of dataframes, one dataframe per parcellation with the mapping between roi and channels
-    """
+    Parameters
+    ----------
+    mne_object : mne.io.Raw or mne.Epochs
+        Object containing the montage to extract the ROI.
+    list_parcellations : list of str
+        List of the parcellation files to use for the mapping.
+    subject : str
+        Name of the subject to access the FreeSurfer recon.
+    fs_dir : str or pathlib.Path
+        Path to the FreeSurfer directory containing all the participants.
+    param : dict
+        Parameters used to generate the data.
+    save_root : str or pathlib.Path
+        Path to where the data should be saved.
+    step : str
+        Name of the preprocessing step.
+    signal : str
+        Name of the signal being saved.
+    file_prefix : str
+        Prefix of the file to save.
+    file_extension : str, optional
+        File name extension (default is 'mapping.csv').
 
+    Returns
+    -------
+    dict of pandas.DataFrame
+        One DataFrame per parcellation with the mapping between ROI and channels.
+    """
     # Generate the root path to save the data:
     save_path = Path(save_root, step, signal)
     path_generator(save_path)
@@ -336,7 +405,7 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, param, save_roo
         if mne_object.get_montage().get_positions()['coord_frame'] == "mni_tal":
             sample_path = mne.datasets.sample.data_path()
             subjects_dir = Path(sample_path, 'subjects')
-            # Convert the montge from mni to mri:
+            # Convert the montage from mni to mri:
             montage = mne_object.get_montage()
             montage.apply_trans(mne.transforms.Transform(fro='mni_tal', to='mri', trans=np.eye(4)))
             labels, _ = \
@@ -357,7 +426,7 @@ def roi_mapping(mne_object, list_parcellations, subject, fs_dir, param, save_roo
                 "region": "/".join(labels[ch])
             }, index=[ind])
                 for ind, ch in enumerate(labels.keys())]))
-    # Creating the directory if it doesn't exists:
+    # Creating the directory if it doesn't exist:
     if not os.path.isdir(save_path):
         # Creating the directory:
         os.makedirs(save_path)
@@ -378,11 +447,21 @@ def exclude_distant_channels(montage, subject, fs_dir, max_dist=5):
     """
     Exclude electrodes that are further than max_dist from the brain surface.
 
-    :param montage: mne DigMontage object
-    :param subject: string, subject ID
-    :param fs_dir: path or string, path to the freesurfer directory
-    :param max_dist: float, maximum distance from the brain surface
-    :return: mne DigMontage object, updated montage
+    Parameters
+    ----------
+    montage : mne.channels.DigMontage
+        The montage containing electrode positions.
+    subject : str
+        Subject ID.
+    fs_dir : str or pathlib.Path
+        Path to the FreeSurfer directory.
+    max_dist : float, optional
+        Maximum distance from the brain surface (default is 5 mm).
+
+    Returns
+    -------
+    mne.channels.DigMontage
+        The updated montage with distant electrodes excluded.
     """
     # Load the surface file using nibabel
     # Create the file names to the directory:

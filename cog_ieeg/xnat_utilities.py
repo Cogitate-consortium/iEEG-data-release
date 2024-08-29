@@ -9,10 +9,14 @@ from cog_ieeg.utils import get_bids_root, get_xnat_host, get_xnat_project
 
 def move_dir_contents(source_dir, destination_dir):
     """
-    Move contents from source directory to destination directory.
+    Move contents from the source directory to the destination directory.
 
-    :param source_dir: Path to the source directory.
-    :param destination_dir: Path to the destination directory.
+    Parameters
+    ----------
+    source_dir : str
+        Path to the source directory.
+    destination_dir : str
+        Path to the destination directory.
     """
     try:
         if not op.exists(destination_dir):
@@ -33,16 +37,27 @@ def move_dir_contents(source_dir, destination_dir):
 
 def xnat_download(subjects_to_download, to=None, overwrite=False):
     """
-    Download subjects data from XNAT project.
+    Download subject data from an XNAT project.
 
-    :param subjects_to_download: List of subjects to download.
-    :param overwrite: Flag to overwrite existing data.
+    Parameters
+    ----------
+    subjects_to_download : str or list of str
+        List of subject IDs to download. If a single subject ID is provided as a string, it will be converted to a list.
+    to : str, optional
+        Path to the directory where the data will be downloaded. If not provided, the BIDS root directory is used.
+    overwrite : bool, optional
+        Whether to overwrite existing data. Default is False.
+
+    Raises
+    ------
+    SystemExit
+        If the XNAT project is not found or the subjects are not found in the project.
     """
     if to is None:
         to = get_bids_root()
         
     if not isinstance(get_xnat_project(), str):
-        print('project not provided or wrong type provided, must be a string.')
+        print('Project not provided or wrong type provided, must be a string.')
         sys.exit(1)
     
     if isinstance(subjects_to_download, str):
@@ -58,7 +73,7 @@ def xnat_download(subjects_to_download, to=None, overwrite=False):
 
     # Loop to prompt for username and password until successful login
     while True:
-        user = input("Enter your XNAT user name: ")
+        user = input("Enter your XNAT username: ")
         password = getpass.getpass("Enter your XNAT password: ")
         try:
             session = xnat.connect(f'https://{get_xnat_host()}.ae.mpg.de', user=user, password=password)

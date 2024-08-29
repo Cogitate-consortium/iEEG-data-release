@@ -1,15 +1,30 @@
+"""
+This module provides a pipeline to apply preprocessing to iEEG data of single subjects based on a set of parameters
+
+Author:
+-------
+Alex Lepauvre
+Katarina Bendtz
+Simon Henin
+
+License:
+--------
+This code is licensed under the MIT License.
+"""
+
 import json
 import mne
 import os
 import sys
-
 from pathlib import Path
 from mne_bids import BIDSPath, read_raw_bids
 from cog_ieeg.localization import roi_mapping
 from cog_ieeg.vizualization import plot_channels_psd, plot_bad_channels, plot_electrode_localization
 from cog_ieeg.utils import mne_data_saver, get_pipeline_config, get_bids_root, get_fs_directory
-from cog_ieeg.processing import detrend_runs, custom_car, epoching, compute_hg, compute_erp, description_ch_rejection, \
-    laplacian_referencing, notch_filtering
+from cog_ieeg.processing import (
+    detrend_runs, custom_car, epoching, compute_hg, compute_erp, 
+    description_ch_rejection, laplacian_referencing, notch_filtering
+)
 
 # Add the parent directory to sys.path
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -35,32 +50,47 @@ SUPPORTED_STEPS = [
     "plot_channels_loc"
 ]
 
-ERROR_UNKNOWN_STEP_TEXT = "You have given the preprocessing step: {step} in the analysis paramters json file that is " \
-                          "not \nsupported. The supported steps are those: " \
-                          "{supported_steps}. " \
-                          "\nMake sure you check the spelling in the analysis parameter json file!"
+ERROR_UNKNOWN_STEP_TEXT = (
+    "You have given the preprocessing step: {step} in the analysis parameters JSON file that is "
+    "not supported. The supported steps are those: "
+    "{supported_steps}. "
+    "Make sure you check the spelling in the analysis parameter JSON file!"
+)
 
-ERROR_RAW_MISSING = "You have called {step} after calling epoching. This step only works if " \
-                    "\n the signal is continuous. Make sure you set the order of your " \
-                    "\npreprocessing steps such that this step is called BEFORE you call epoching"
-ERROR_EPOCHS_MISSING = "You have called {step} before calling epoching. This step only works if " \
-                       "\n the signal is epoched already. Make sure you set the order of your " \
-                       "\npreprocessing steps such that this step is called AFTER you call epoching"
-ERROR_SIGNAL_MISSING = "For the preprocessing step {step}, you have passed the signal {signal} " \
-                       "\nwhich does not exist at this stage of the preprocessing. Either you have asked " \
-                       "\nfor that signal to be generated later OR you haven't asked for it to be " \
-                       "\ngenerated. Make sure to check your config file"
+ERROR_RAW_MISSING = (
+    "You have called {step} after calling epoching. This step only works if "
+    "the signal is continuous. Make sure you set the order of your "
+    "preprocessing steps such that this step is called BEFORE you call epoching"
+)
 
+ERROR_EPOCHS_MISSING = (
+    "You have called {step} before calling epoching. This step only works if "
+    "the signal is epoched already. Make sure you set the order of your "
+    "preprocessing steps such that this step is called AFTER you call epoching"
+)
+
+ERROR_SIGNAL_MISSING = (
+    "For the preprocessing step {step}, you have passed the signal {signal} "
+    "which does not exist at this stage of the preprocessing. Either you have asked "
+    "for that signal to be generated later OR you haven't asked for it to be "
+    "generated. Make sure to check your config file"
+)
 
 def run_preprocessing(param, subjects):
     """
-    This function applies a preprocessing pipeline to the iEEG data of the subjects passed in the list subjects list.
-    The preprocessing pipeline is conducted according to the parameters passed in param. The param can either be a
-    json file containing the preprocessing parameters or by passing directly a dictionary.
-    :param param: (path-like or dictionary) contains the parameters for the preprocessing pipeline
-    :param subjects: (list of strings) list of the subjects on which to apply the specified preprocessing pipeline.
-    return:
-        - None: the output of the preprocessing configs are saved under $bids_root/derivatives/preprocessing
+    Apply a preprocessing pipeline to the iEEG data of the specified subjects.
+
+    Parameters
+    ----------
+    param : dict or str
+        The parameters for the preprocessing pipeline. If a string is provided, it should be a path to a JSON file containing the parameters.
+    subjects : list of str
+        List of subject IDs to preprocess. If a single subject ID is provided as a string, it will be converted to a list.
+
+    Returns
+    -------
+    None
+        The output of the preprocessing configurations is saved under `$bids_root/derivatives/preprocessing`.
     """
     print("=" * 80)
     print("Welcome to preprocessing!")
@@ -72,6 +102,7 @@ def run_preprocessing(param, subjects):
     if isinstance(subjects, str):
         subjects = [subjects]
     print(subjects)
+    
     # Downloading the subjects if needed:
     xnat_download(['sub-' + sub for sub in subjects], overwrite=False)
 

@@ -30,9 +30,17 @@ def detrend_runs(raw, njobs=1):
     Detrend the run. If the raw data initially consisted of several files that were concatenated,
     the detrending will be performed separately for each run. Otherwise, it will be done in one go.
 
-    :param raw: mne raw object
-    :param njobs: int, number of jobs to use for detrending
-    :return: detrended mne raw object
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data.
+    njobs : int, optional
+        Number of jobs to use for detrending, by default 1.
+
+    Returns
+    -------
+    mne.io.Raw
+        Detrended raw iEEG data.
     """
     # Check whether there are any annotations marking the merging:
     if len(np.where(raw.annotations.description == "BAD boundary")[0]) > 0:
@@ -88,10 +96,19 @@ def custom_car(raw, reference_channel_types=None, target_channel_types=None):
     Compute a custom common average reference (CAR) by averaging the amplitude across specific channel types and
     subtracting it from all channels at each time point.
 
-    :param raw: mne raw object, contains the data to be rereferenced
-    :param reference_channel_types: dict, specifying the channels types to take as reference
-    :param target_channel_types: dict, specifying the channels types to apply reference to
-    :return: mne raw object, modified instance of the mne object
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data to be rereferenced.
+    reference_channel_types : dict, optional
+        Dictionary specifying the channel types to take as reference, by default None.
+    target_channel_types : dict, optional
+        Dictionary specifying the channel types to apply the reference to, by default None.
+
+    Returns
+    -------
+    mne.io.Raw
+        Modified raw iEEG data with CAR applied.
     """
     # Handling empty input:
     if reference_channel_types is None:
@@ -121,17 +138,33 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
     """
     Perform epoching according to the provided parameters.
 
-    :param raw: mne raw object, data to epoch
-    :param events: mne events numpy array, three columns: event time stamp, event ID
-    :param events_dict: dict, mapping between the events ID and their descriptions
-    :param picks: string or list of int or list of strings, channels to epoch
-    :param tmin: float, how long before each event of interest to epoch (in seconds)
-    :param tmax: float, how long after each event of interest to epoch (in seconds)
-    :param events_not_to_epoch: list of strings, name of the events not to epoch
-    :param baseline: tuple of floats, passed to the mne epoching function to apply baseline correction
-    :param reject_by_annotation: boolean, whether or not to discard trials based on annotations
-    :param meta_data_column: list of strings, list of the column names of the metadata
-    :return: mne epochs object
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data to epoch.
+    events : np.ndarray
+        MNE events array, three columns: event time stamp, event ID.
+    events_dict : dict
+        Dictionary mapping event IDs to their descriptions.
+    picks : str or list of int or list of str, optional
+        Channels to epoch, by default "all".
+    tmin : float, optional
+        How long before each event of interest to epoch (in seconds), by default -0.5.
+    tmax : float, optional
+        How long after each event of interest to epoch (in seconds), by default 2.0.
+    events_not_to_epoch : list of str, optional
+        Names of the events not to epoch, by default None.
+    baseline : tuple of float, optional
+        Tuple passed to the MNE epoching function to apply baseline correction, by default (None, 0.0).
+    reject_by_annotation : bool, optional
+        Whether to discard trials based on annotations, by default True.
+    meta_data_column : list of str, optional
+        List of column names for the metadata, by default None.
+
+    Returns
+    -------
+    mne.Epochs
+        The epoched iEEG data.
     """
     if picks == "all":
         picks = raw.info["ch_names"]
@@ -139,7 +172,7 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
         baseline = tuple(baseline)
     print('Performing epoching')
 
-    # We only want to epochs certain events. The config file specifies which ones should not be epoched (fixation
+    # We only want to epoch certain events. The config file specifies which ones should not be epoched (fixation
     # for ex). The function below returns only the events we are interested in!
     if events_not_to_epoch is not None:
         events_of_interest = {key: events_dict[key] for key in events_dict if not
@@ -148,9 +181,6 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
         events_of_interest = events_dict
 
     # Epoching the data:
-    # The events are all events and the event_id are the events which we want to use for the
-    # epoching. Since we are passing a dictionary we can also use the provided keys to acces
-    # the events later
     epochs = mne.Epochs(raw, events=events, event_id=events_of_interest, tmin=tmin,
                         tmax=tmax, baseline=baseline, picks=picks,
                         reject_by_annotation=reject_by_annotation)
@@ -167,19 +197,30 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
 def compute_hg(raw, frequency_range=None, njobs=1, bands_width=10, channel_types=None,
                do_baseline_normalization=True):
     """
-    This function computes the high gamma signal by filtering the signal in bins between a defined frequency range.
-    In each frequency bin, the hilbert transform is applied and the amplitude is extracted (i.e. envelope). The envelope
-    is then normalized by dividing by the mean amplitude over the entire time series (within each channel separately).
-    The amplitude is then averaged across frequency bins. This follows the approach described here:
-    https://www.nature.com/articles/s41467-019-12623-6#Sec10
+    Compute the high gamma signal by filtering the signal in bins between a defined frequency range.
+    In each frequency bin, the Hilbert transform is applied and the amplitude is extracted (i.e., envelope).
+    The envelope is then normalized by dividing by the mean amplitude over the entire time series (within each channel separately).
+    The amplitude is then averaged across frequency bins.
 
-    :param raw: mne raw object, raw signal
-    :param frequency_range: list of list of floats, frequency of interest
-    :param bands_width: float or int, width of the frequency bands to loop over
-    :param njobs: int, number of parallel processes to compute the high gammas
-    :param channel_types: dict, name of the channels for which the high gamma should be computed
-    :param do_baseline_normalization: bool, whether to do baseline normalization
-    :return: mne raw object, dictionary containing raw objects with high gamma in the different frequency bands
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data.
+    frequency_range : list of list of float, optional
+        Frequency range of interest, by default None.
+    bands_width : float or int, optional
+        Width of the frequency bands to loop over, by default 10.
+    njobs : int, optional
+        Number of parallel processes to compute the high gammas, by default 1.
+    channel_types : dict, optional
+        Dictionary specifying the channel types for which to compute the high gamma, by default None.
+    do_baseline_normalization : bool, optional
+        Whether to perform baseline normalization, by default True.
+
+    Returns
+    -------
+    mne.io.Raw
+        The raw object containing the high gamma signal.
     """
 
     def divide_by_average(data):
@@ -281,12 +322,23 @@ def compute_erp(raw, frequency_range=None, njobs=1, channel_types=None, **kwargs
     """
     Compute the event-related potential (ERP) by low-pass filtering the raw signal.
 
-    :param raw: mne raw object, raw signal
-    :param frequency_range: list of list of floats, frequency of interest
-    :param njobs: int, number of parallel processes to compute the ERP
-    :param channel_types: dict, type of channel for which the ERP should be computed
-    :param kwargs: arguments that can be passed to the mne raw.filter function
-    :return: mne raw object, computed ERP signal
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data.
+    frequency_range : list of list of float, optional
+        Frequency range of interest, by default None.
+    njobs : int, optional
+        Number of parallel processes to compute the ERP, by default 1.
+    channel_types : dict, optional
+        Dictionary specifying the channel types for which to compute the ERP, by default None.
+    kwargs : dict
+        Additional arguments passed to the MNE raw.filter function.
+
+    Returns
+    -------
+    mne.io.Raw
+        The raw object containing the computed ERP signal.
     """
     if channel_types is None:
         channel_types = {"seeg": True, "ecog": True}
@@ -307,11 +359,21 @@ def description_ch_rejection(raw, bids_path, channels_description, discard_bads=
     """
     Discard channels based on the descriptions found in the _channel.tsv file in the BIDS dataset.
 
-    :param raw: mne raw object, contains the data and channels to investigate
-    :param bids_path: mne_bids BIDSPath object, path to the _channel.tsv file
-    :param channels_description: str or list, channels descriptions to set as bad channels
-    :param discard_bads: boolean, whether or not to discard the channels that were marked as bad
-    :return: tuple (mne raw object, list of bad channels)
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data containing the channels to investigate.
+    bids_path : mne_bids.BIDSPath
+        BIDSPath object pointing to the _channel.tsv file.
+    channels_description : str or list of str
+        Channels descriptions to set as bad channels.
+    discard_bads : bool, optional
+        Whether to discard the channels that were marked as bad, by default True.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the updated raw object and a list of bad channels.
     """
     if isinstance(channels_description, str):
         channels_description = [channels_description]
@@ -347,9 +409,16 @@ def laplace_mapping_validator(mapping, data_channels):
     """
     Check the mapping against the channels found in the data. Raise an error if there are inconsistencies.
 
-    :param mapping: dict, contains the mapping between channels to reference and which channels to use for the reference
-    :param data_channels: list of string, list of the channels found in the data
-    :return: None
+    Parameters
+    ----------
+    mapping : dict
+        Contains the mapping between channels to reference and the channels to use for the reference.
+    data_channels : list of str
+        List of the channels found in the data.
+
+    Returns
+    -------
+    None
     """
     if not all([channel in data_channels for channel in mapping.keys()]) \
             or not all([mapping[channel]["ref_1"] in data_channels or mapping[channel]["ref_1"] is None
@@ -364,11 +433,11 @@ def laplace_mapping_validator(mapping, data_channels):
         print([mapping[channel]["ref_2"]
                for channel in mapping.keys() if mapping[channel]["ref_2"] not in data_channels])
         raise Exception("The mapping contains channels that are not in the data!")
-    # Checking that there is never the case of having both reference as None:
+    # Checking that there is never the case of having both references as None:
     if any([mapping[channel]["ref_1"] is None and mapping[channel]["ref_2"] is None for channel in mapping.keys()]):
         invalid_channels = [channel for channel in mapping.keys() if
                             mapping[channel]["ref_1"] is None and mapping[channel]["ref_2"] is None]
-        mne.utils.warn("The channels {0} have two None reference. They will be set to bad! If this is not intended,"
+        mne.utils.warn("The channels {0} have two None references. They will be set to bad! If this is not intended,"
                        "please review your mapping!".format(invalid_channels))
 
     return None
@@ -376,13 +445,22 @@ def laplace_mapping_validator(mapping, data_channels):
 
 def remove_bad_references(reference_mapping, bad_channels, all_channels):
     """
-    Integrate bad channels information to the reference mapping. Update the mapping such that channels with bad
+    Integrate bad channels information into the reference mapping. Update the mapping such that channels with bad
     references are excluded.
 
-    :param reference_mapping: dict, contain for each channel the reference channel according to the scheme
-    :param bad_channels: string list, list of the channels that are marked as bad
-    :param all_channels: string list, list of all the channels
-    :return: tuple (new_reference_mapping, new_bad_channels)
+    Parameters
+    ----------
+    reference_mapping : dict
+        Dictionary containing the reference channel mapping.
+    bad_channels : list of str
+        List of channels that are marked as bad.
+    all_channels : list of str
+        List of all channels.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the updated reference mapping and the updated list of bad channels.
     """
     new_reference_mapping = reference_mapping.copy()
     # Looping through each channel to reference to combine bad channels information:
@@ -399,14 +477,14 @@ def remove_bad_references(reference_mapping, bad_channels, all_channels):
                 reference_mapping[channel]["ref_1"], reference_mapping[channel]["ref_2"], channel, channel))
             new_reference_mapping.pop(channel)
             continue
-        # But if only one of the two reference is bad, setting that one ref to None:
+        # But if only one of the two references is bad, setting that one ref to None:
         elif reference_mapping[channel]["ref_1"] in bad_channels:
             new_reference_mapping[channel]["ref_1"] = None
         elif reference_mapping[channel]["ref_2"] in bad_channels:
             new_reference_mapping[channel]["ref_2"] = None
 
-        # As a result of setting one of the reference to None if bad, some channels located close to edges might have
-        # only None as references, in which case they can't be referenced. This channels need to be removed from the
+        # As a result of setting one of the references to None if bad, some channels located close to edges might have
+        # only None as references, in which case they can't be referenced. These channels need to be removed from the
         # mapping
         if new_reference_mapping[channel]["ref_1"] is None and new_reference_mapping[channel]["ref_2"] is None:
             print("The reference channels {} cannot be referenced, because both surrounding channels are None as a "
@@ -427,20 +505,22 @@ def remove_bad_references(reference_mapping, bad_channels, all_channels):
 
 def laplace_ref_fun(to_ref, ref_1=None, ref_2=None):
     """
-    This function computes the laplace reference by subtracting the mean of ref_1 and ref_2 to the channel to reference:
-    ch = ch - mean(ref_1, ref_2)
-    The to-ref channel must be a matrix with dim: [channel, time]. The ref_1 and ref_2 must have the same dimensions AND
-    the channel rows must match the order. So if you want to reference G2 with G1 and G2 and well as G3 with G2 and G4,
-    then your matrices must be like so:
-    to_ref:                ref_1              ref_2
-    [                 [                       [
-    G2 ..........     G1 ..............       G3 ..............
-    G3 ..........     G2 ..............       G4 ..............
-    ]                 ]                       ]
-    :param to_ref: numpy array, contains the data to reference
-    :param ref_1: numpy array, contains the first ref to do the reference
-    :param ref_2: numpy array, contains the second ref to do the reference
-    :return: numpy array, referenced data
+    Compute the Laplace reference by subtracting the mean of ref_1 and ref_2 from the channel to reference:
+    ch = ch - mean(ref_1, ref_2).
+
+    Parameters
+    ----------
+    to_ref : np.ndarray
+        Array containing the data to reference.
+    ref_1 : np.ndarray, optional
+        Array containing the first reference channel data, by default None.
+    ref_2 : np.ndarray, optional
+        Array containing the second reference channel data, by default None.
+
+    Returns
+    -------
+    np.ndarray
+        The referenced data.
     """
     # Check that the sizes match:
     if not to_ref.shape == ref_1.shape == ref_2.shape:
@@ -454,28 +534,30 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
                           n_jobs=1, relocate_edges=True,
                           subjects_dir=None, subject=None):
     """
-    Performs laplacian referencing by subtracting the average of two neighboring electrodes to the
-    central one. So for example, if you have electrodes G1, G2, G3, you can reference G2 as G2 = G2 - mean(G1, G2).
-    The user can pass a mapping in the format of a dictionary. The dictionary must have the structure:
-    {
-    "ch_to_reference": {
-        "ref_1": "ref_1_ch_name" or None,
-        "ref_1": "ref_1_ch_name" or None,
-        },
-    ...
-    }
-    If the user doesn't pass a mapping, he will be given the opportunity to generate it manually through command line
-    input. If no mapping exists, we recommend using the command line to generate it, as the formating is then readily
-    consistent with the needs of the function. The function so far only works with raw object, not epochs nor evoked
+    Perform Laplacian referencing by subtracting the average of two neighboring electrodes from the
+    central one.
 
-    :param raw: mne raw object, contains the data to reference
-    :param reference_mapping: dict or None, dict of the format described above or None
-    :param channel_types: dict, which channels to consider for the referencing
-    :param n_jobs: int, number of jobs to compute the mapping
-    :param relocate_edges: boolean, whether or not to relocate the electrodes that have only one ref
-    :param subjects_dir: string, directory to the freesurfer data
-    :param subject: string, name of the subject to access the right surface
-    :return: tuple (mne raw object, reference_mapping, bad_channels)
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The raw iEEG data to reference.
+    reference_mapping : dict or None
+        Dictionary of the format described above or None.
+    channel_types : dict, optional
+        Dictionary specifying which channels to consider for referencing, by default None.
+    n_jobs : int, optional
+        Number of jobs to compute the referencing, by default 1.
+    relocate_edges : bool, optional
+        Whether to relocate the electrodes that have only one reference, by default True.
+    subjects_dir : str, optional
+        Directory to the FreeSurfer data, by default None.
+    subject : str, optional
+        Name of the subject to access the right surface, by default None.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the modified raw object, the updated reference mapping, and the updated list of bad channels.
     """
     # Get the channels of interest.
     if channel_types is None:
@@ -488,7 +570,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
     reference_mapping, bad_channels = remove_bad_references(reference_mapping, raw.info["bads"], channels_of_int)
 
     # ------------------------------------------------------------------------------------------------------------------
-    # Performing the laplace reference:
+    # Performing the Laplacian reference:
     # Extract data to get the references and avoid issue with changing in place when looping:
     ref_data = raw.get_data()
     data_chs = raw.ch_names
@@ -498,7 +580,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
     empty_mat[:] = np.nan
     # Extract the montage:
     montage = raw.get_montage()
-    # performing the laplace referencing:
+    # performing the Laplacian referencing:
     for ch in reference_mapping.keys():
         if reference_mapping[ch]["ref_1"] is None:
             ref_1 = empty_mat
@@ -517,7 +599,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
                            channel_wise=True)
         # Relocating if needed:
         if relocate_edges:
-            # If one of the two reference is only Nan, then there was one ref missing, in which case the channel must
+            # If one of the two references is only NaN, then there was one reference missing, in which case the channel must
             # be replaced, (bitwise or because only if one of the two is true)
             if np.isnan(ref_1).all() ^ np.isnan(ref_2).all():
                 print("Relocating channel " + ch)
@@ -538,7 +620,7 @@ def laplacian_referencing(raw, reference_mapping, channel_types=None,
         # Adding the montage back:
         raw.set_montage(montage, on_missing="ignore", verbose="ERROR")
 
-    # Projecting the ecog channels to the surface if they were relocated:
+    # Projecting the ECoG channels to the surface if they were relocated:
     if relocate_edges:
         ecog_channels = mne.pick_types(raw.info, ecog=True)
         if len(ecog_channels) > 0:
@@ -551,12 +633,22 @@ def baseline_scaling(epochs, correction_method="ratio", baseline=(None, 0), pick
     """
     Perform baseline correction on the data.
 
-    :param epochs: mne epochs object, epochs on which to perform the baseline correction
-    :param correction_method: string, options to do the baseline correction
-    :param baseline: tuple, which bit to take as the baseline
-    :param picks: None or list of int or list of strings, indices or names of the channels on which to perform the correction
-    :param n_jobs: int, number of jobs to use to preprocess the function
-    :return: None
+    Parameters
+    ----------
+    epochs : mne.Epochs
+        The epochs on which to perform the baseline correction.
+    correction_method : str, optional
+        Method to use for the baseline correction, by default "ratio".
+    baseline : tuple, optional
+        Time interval to use as the baseline, by default (None, 0).
+    picks : list of int or list of str, optional
+        Indices or names of the channels on which to perform the correction, by default None.
+    n_jobs : int, optional
+        Number of jobs to use to preprocess the function, by default 1.
+
+    Returns
+    -------
+    None
     """
     from mne.baseline import rescale
     epochs.apply_function(rescale, times=epochs.times, baseline=baseline, mode=correction_method,
@@ -570,15 +662,29 @@ def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_ty
     """
     Filter the raw data according to the set parameters.
 
-    :param raw: mne raw object, continuous data
-    :param njobs: int, number of jobs to preprocess the filtering in parallel threads
-    :param frequency: int or float, frequency to notch out
-    :param remove_harmonics: boolean, whether or not to remove all the harmonics of the declared frequency
-    :param filter_type: string, type of filter to use, "iir" or "fir"
-    :param cutoff_lowpass_bw: float, frequency for low pass (only used if type is iir)
-    :param cutoff_highpass_bw: float, frequency for high pass (only used if type is iir)
-    :param channel_types: dict, type of channels to notch filter, boolean for the channel types
-    :return: mne raw object
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        The continuous raw iEEG data.
+    njobs : int, optional
+        Number of jobs to preprocess the filtering in parallel threads, by default 1.
+    frequency : int or float, optional
+        Frequency to notch out, by default 60.
+    remove_harmonics : bool, optional
+        Whether to remove all the harmonics of the declared frequency, by default True.
+    filter_type : str, optional
+        Type of filter to use, "iir" or "fir", by default "fir".
+    cutoff_lowpass_bw : float, optional
+        Frequency for low pass (only used if type is "iir"), by default None.
+    cutoff_highpass_bw : float, optional
+        Frequency for high pass (only used if type is "iir"), by default None.
+    channel_types : dict, optional
+        Dictionary specifying the channel types to notch filter, by default None.
+
+    Returns
+    -------
+    mne.io.Raw
+        The notch filtered raw data.
     """
     # ------------------------------------------------------------------------------------------------------------------
     # Filtering the data:
@@ -622,12 +728,19 @@ def notch_filtering(raw, njobs=1, frequency=60, remove_harmonics=True, filter_ty
 
 def create_metadata_from_events(epochs, metadata_column_names):
     """
-    Parse the events found in the epochs descriptions to create the metadata. The columns of the metadata are generated
-    based on the metadata column names.
+    Parse the events found in the epochs descriptions to create the metadata.
 
-    :param epochs: mne epochs object, epochs for which the metadata will be generated
-    :param metadata_column_names: list of strings, name of the columns of the metadata
-    :return: mne epochs object with added metadata
+    Parameters
+    ----------
+    epochs : mne.Epochs
+        The epochs for which the metadata will be generated.
+    metadata_column_names : list of str
+        Names of the columns of the metadata.
+
+    Returns
+    -------
+    mne.Epochs
+        The epochs with added metadata.
     """
 
     # Getting the event description of each single trial
