@@ -12,3 +12,4 @@ pyvista
 pyvistaqt
 pyyaml
 xnat
+git+https://github.com/Cogitate-consortium/iEEG-data-release.git@main#egg=cog_ieeg

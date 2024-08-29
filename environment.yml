@@ -1,4 +1,4 @@
-name: cog_ieeg_release
+name: cog_ieeg_release_v2
 channels:
   - conda-forge
   - defaults
@@ -367,3 +367,5 @@ dependencies:
   - zlib-ng=2.2.1
   - zstandard=0.22.0
   - zstd=1.5.6
+  - pip:
+    - git+https://github.com/Cogitate-consortium/iEEG-data-release.git@main#egg=cog_ieeg
