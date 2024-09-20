@@ -1,4 +1,6 @@
 # Custom
+cog_ieeg/config/config-path.json
+OLD/
 bids/
 bids-cogitate/
 bids-xnat/
