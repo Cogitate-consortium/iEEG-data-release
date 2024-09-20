@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["cog_ieeg"]
+
+[project]
+name = "cog_ieeg"
+version = "0.1.0"
+description = "A Python package to download and analyze iEEG data collected as part of the COGITATE project"
+readme = "README.md"
+authors = [
+    { name = "Alex Lepauvre", email = "alex.lepauvre@ae.mpg.de" },
+    { name = "Simon Henin", email = "Simon.Henin@nyulangone.org" },
+    { name = "Katarian Bendtz", email = "katarina.bendtz@gmail.com" },
+    { name = "Praveen Sriprad", email = "praveen.sripad@ae.mpg.de" },
+    { name = "Niccolò Bonacchi", email = "nbonacchi@gmail.com" },
+    { name = "Gabriel Kreiman", email = "Gabriel.Kreiman@childrens.harvard.edu" },
+    { name = "Lucia Melloni", email = "lucia.melloni@ae.mpg.de" },
+]
+requires-python = ">=3.9"
+dependencies = [
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "scipy",
+    "opencv-python",
+    "typeguard",
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+    "numpydoc",
+    "codespell",
+    "pre-commit",
+]
+doc = [
+    "sphinx",
+    "pydata-sphinx-theme",
+    "nbsphinx",
+]
