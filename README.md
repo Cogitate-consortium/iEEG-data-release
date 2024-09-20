@@ -26,7 +26,7 @@ By default, the data will be downloaded in your home directory, under COGITATE/b
 
 ```
 from cog_ieeg.utils import set_bids_root
-set_bids_root"YOUR/LOCAL/PATH"()
+set_bids_root("YOUR/LOCAL/PATH")
 ```
 
 This step is optional, everything else is ready to go. You also don't need to download any data manually, has we have automated download implemented. You should only register to our database [here](https://www.arc-cogitate.com/data-release) to get your credentials. You will simply need to specify the name of the subject you would like to download, input your credentials and the data will get downloaded on your machine. 

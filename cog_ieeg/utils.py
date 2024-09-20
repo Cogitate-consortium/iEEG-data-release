@@ -163,6 +163,10 @@ def create_default_config():
     with open(get_config_path('config-path.json'), 'w') as configfile:
         json.dump(config, configfile, indent=4)
 
+    if not os.path.isdir(config["Paths"]["bids_root"]):
+        os.makedirs(config["Paths"]["bids_root"])
+        os.makedirs(config["Paths"]["fs_directory"])
+
     return None
 
 
