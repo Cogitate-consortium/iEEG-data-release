@@ -21,25 +21,19 @@ authors = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "ipython",
+    "jupyter",
+    "mne==1.7.1",
+    "mne-bids==0.15.0",
+    "networkx",
+    "nibabel",
+    "nilearn",
     "pandas",
-    "numpy",
-    "matplotlib",
-    "scipy",
-    "opencv-python",
-    "typeguard",
-    "requests",
-]
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "ruff",
-    "numpydoc",
-    "codespell",
-    "pre-commit",
-]
-doc = [
-    "sphinx",
-    "pydata-sphinx-theme",
-    "nbsphinx",
+    "pingouin",
+    "pyqt5",
+    "pyvista",
+    "pyvistaqt",
+    "pyyaml",
+    "xnat",
+    "papermill"
 ]
