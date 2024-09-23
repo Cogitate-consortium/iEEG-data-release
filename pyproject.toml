@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["cog_ieeg"]
+packages = ["cog_ieeg"]
 
 [project]
 name = "cog_ieeg"
@@ -37,5 +37,6 @@ dependencies = [
     "xnat",
     "papermill"
 ]
+
 [tool.setuptools.package-data]
-'src' = ['*.json']
+cog_ieeg = ["config/*.json"]
