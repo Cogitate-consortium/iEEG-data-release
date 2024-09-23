@@ -25,10 +25,6 @@ from cog_ieeg.processing import (
     detrend_runs, custom_car, epoching, compute_hg, compute_erp, 
     description_ch_rejection, laplacian_referencing, notch_filtering
 )
-
-# Add the parent directory to sys.path
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(parent_dir)
 from cog_ieeg.xnat_utilities import xnat_download
 
 # Fetch fsaverage:

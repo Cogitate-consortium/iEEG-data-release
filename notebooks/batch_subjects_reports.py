@@ -7,9 +7,6 @@ import nbformat
 import shutil
 import sys
 from cog_ieeg.utils import get_bids_root
-# Add the parent directory to sys.path
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(parent_dir)
 from cog_ieeg.xnat_utilities import xnat_download
 
 
