@@ -7,18 +7,11 @@
 This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data we have recently submitted. In addition, we have packaged various utilities that were created during the cogitate as a python package named cog_ieeg.
 
 ## Setup guide:
-First, you should install the environment and activate it. This may be done as shown below.
-1. Using conda
-   ```
-   conda env create -f environment.yml
-   conda activate cog_ieeg_release
-   ```
-2. Using pip
-    ```
-    python -m venv cog_ieeg_release
-    source cog_ieeg_release/bin/activate
-    pip install -r requirements.txt
-    ```
+First, you should install all the dependencies and setup the cog_ieeg package, which is all done with a single line (make sure to create a separate environment where would like to have it installed first):
+```
+pip install git+https://github.com/Cogitate-consortium/iEEG-data-release.git@main#egg=cog_ieeg
+```
+This will take a bit of time, but then everything will be ready to go.
 
 ### 
 
