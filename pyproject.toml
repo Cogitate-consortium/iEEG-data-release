@@ -37,3 +37,7 @@ dependencies = [
     "xnat",
     "papermill"
 ]
+
+include = [
+    "cog_ieeg/config/*.json"
+]
