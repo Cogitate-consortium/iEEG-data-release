@@ -2,6 +2,9 @@
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["cog_ieeg", "cog_ieeg.pipelines"]
+
 [project]
 name = "cog_ieeg"
 version = "0.1.0"
