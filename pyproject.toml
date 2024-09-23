@@ -37,7 +37,5 @@ dependencies = [
     "xnat",
     "papermill"
 ]
-
-include = [
-    "cog_ieeg/config/*.json"
-]
+[tool.setuptools.package-data]
+'src' = ['*.json']
