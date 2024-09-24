@@ -7,7 +7,7 @@ packages = ["cog_ieeg", "cog_ieeg.pipelines"]
 
 [project]
 name = "cog_ieeg"
-version = "0.1.0"
+version = "0.1.0-beta"
 description = "A Python package to download and analyze iEEG data collected as part of the COGITATE project"
 readme = "README.md"
 authors = [
