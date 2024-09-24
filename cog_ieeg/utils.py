@@ -131,7 +131,7 @@ def get_data_directory():
     elif system == "Darwin":  # macOS
         data_dir = Path.home() / "Library" / "Documents" / "COGITATE"
     else:  # Assume Linux or other UNIX-like systems
-        data_dir = Path.home() / ".local" / "share"
+        data_dir = Path.home() / ".local" / "share" / "COGITATE"
     
     return data_dir
 
