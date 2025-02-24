@@ -36,7 +36,7 @@ This step is **optional**, everything else is ready to go. You also don't need t
 This repository contains Jupyter notebooks, analysis pipelines, and various utility functions. Depending on your goals, here are the key entry points:
 
 ### Understanding iEEG data and the cogitate data set
-- Check out the [ieeg-data-release.ipynb notebook]((https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-data-release.ipynb)) to see the steps involved in iEEG data analysis, including how to work with the COGITATE data format.
+- Check out the [ieeg-data-release.ipynb notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-data-release.ipynb) to see the steps involved in iEEG data analysis, including how to work with the COGITATE data format.
 
 ### Generate Single-Subject Reports
 - If you have decided you would like to do something with the cogitate data, you should go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-single-subject-report.ipynb). It can be run on each subject to get an idea of channels localization, responses observed
@@ -46,9 +46,9 @@ This repository contains Jupyter notebooks, analysis pipelines, and various util
 - Visit [cog_ieeg](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg) to see the source code for the Python package. This is where various custom functions are implemented and organized.
 
 ### Adopt Our Pipelines for Your Own Data
-- If you have your own data and would like to use pipelines that are similar to ours, go check the various scripts [here](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg/pipelines). The preprocessing pipelines relies heavily on the bids format, which means if your data also are in bids, you should be able to use our pipelines without much tweaking. 
+- If you have your own data and would like to use pipelines that are similar to ours, go check the various scripts [here](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg/pipelines). If your data follows the BIDS format, you should be able to adapt these pipelines with minimal effort
 
-My personal recommendation is to always start with this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/ieeg-single-subject-report.ipynb) as it gives a really good overview of how things work in general. 
+My personal recommendation is to always start with [ieeg-data-release.ipynb notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-data-release.ipynb) as it gives a really good overview of how things work in general. 
 
 ## How to cite us:
 If you use the scripts found in this repository, you can use the DOI provided by Zenodo to cite us. And here is a bibtex:
@@ -58,7 +58,7 @@ If you use the scripts found in this repository, you can use the DOI provided by
   title = {COGITATE-iEEG-DATA-RELEASE},
   author = {Lepauvre, Alex and Henin, Simon and Bendtz, Katarina and Sripad, Praveen and Bonacchi, Niccolò and Kreiman, Gabriel and Melloni, Lucia},
   year = {2024},
-  doi = {TO_BE_UPDATED},
+  doi = {10.5281/zenodo.13832169},
 }
 ```
 
