@@ -1,21 +1,22 @@
 <img src="img/iEEG_data_release_header.svg" width=1400 />
 
 
->**The data required to run these notebooks are not yet available. We will update this page as soon as they are.**
-
-
 This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data we have recently submitted. In addition, we have packaged various utilities that were created during the cogitate as a python package named cog_ieeg.
 
 ## Setup guide:
-First, you should install all the dependencies and setup the cog_ieeg package, which is all done with a single line (make sure to create a separate environment where would like to have it installed first):
+The first step to use our data is to register an account to be able to access the data. Check out this video to see how:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/q-VRXeE6tUw?si=gFRrO4T_DPCXpnNn" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+Then, you should install all the dependencies and setup the cog_ieeg package, which is all done with a single line (make sure to create a separate environment where would like to have it installed first):
 ```
 pip install git+https://github.com/Cogitate-consortium/iEEG-data-release.git@main#egg=cog_ieeg
 ```
 This will take a bit of time, but then everything will be ready to go.
 
-### 
+### Download the data
 
-By default, the data will be downloaded in your home directory, under COGITATE/bids. If you wish to change this default parameter, you can adjust it with python:
+The various scripts presented below will download the data automatically in your home directory, under COGITATE/bids. If you wish to change this default parameter, you can adjust it with python:
 
 ```
 from cog_ieeg.utils import set_bids_root
