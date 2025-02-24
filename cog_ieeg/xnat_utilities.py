@@ -33,6 +33,14 @@ def move_dir_contents(source_dir, destination_dir):
         print("Error: " + str(e))
     except Exception as e:
         print("An error occurred: " + str(e))
+        
+
+def _has_local_subjects(to, subjects):
+    """Check if the subjects to download are already presented locally"""
+    if not op.isdir(to) or subjects is None:
+        return False
+    # Assume subjects are directories in the target path
+    return all([os.path.isdir(op.join(to, subject)) for subject in subjects])
 
 
 def xnat_download(subjects_to_download, to=None, overwrite=False):
@@ -66,7 +74,7 @@ def xnat_download(subjects_to_download, to=None, overwrite=False):
     if not op.isdir(to):
         os.makedirs(to)
 
-    if all([os.path.isdir(op.join(to, subject)) for subject in subjects_to_download]) and not overwrite:
+    if _has_local_subjects(to, subjects_to_download) and not overwrite:
         print(f'The subjects are already present on your computer.')
         print(f'Set overwrite to true if you wish to overwrite them.')
         return

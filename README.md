@@ -1,38 +1,54 @@
 <img src="img/iEEG_data_release_header.svg" width=1400 />
 
 
->**The data required to run these notebooks are not yet available. We will update this page as soon as they are.**
+This repository demonstrates how to:
 
+- Access and download iEEG data from the Cogitate database.
+- Perform preprocessing and preliminary analyses on the data.
+- Use the cog_ieeg Python package, which contains many utilities created for the Cogitate consortium.
 
-This repository contains scripts showcasing how to download iEEG data from the data base, perform preprocessing and preliminary analyses. It accompanies the scientific data we have recently submitted. In addition, we have packaged various utilities that were created during the cogitate as a python package named cog_ieeg.
+It accompanies the scientific data we have recently submitted and is intended to help researchers quickly get started with the dataset and tools.
 
-## Setup guide:
-First, you should install all the dependencies and setup the cog_ieeg package, which is all done with a single line (make sure to create a separate environment where would like to have it installed first):
+# 1. Setup guide:
+
+## 1.1. Register for access
+To download our data, you must first register for an account on our data portal. Watch this [video](https://www.youtube.com/embed/q-VRXeE6tUw?si=gFRrO4T_DPCXpnNn) to see how, or directly register [here](https://cogitate-data.ae.mpg.de/app/template/Login.vm#!).
+
+## 1.2. Install Dependencies & cog_ieeg Package
+In a dedicated Python environment (recommended), run:
 ```
 pip install git+https://github.com/Cogitate-consortium/iEEG-data-release.git@main#egg=cog_ieeg
 ```
-This will take a bit of time, but then everything will be ready to go.
+This single command will install all necessary dependencies and the cog_ieeg package. You will then be ready to go
 
-### 
+# 2. Download the data
 
-By default, the data will be downloaded in your home directory, under COGITATE/bids. If you wish to change this default parameter, you can adjust it with python:
+The various scripts presented below will download the data automatically in your home directory, under COGITATE/bids. If you wish to change this default parameter, you can adjust it with python:
 
 ```
 from cog_ieeg.utils import set_bids_root
 set_bids_root("YOUR/LOCAL/PATH")
 ```
 
-This step is optional, everything else is ready to go. You also don't need to download any data manually, has we have automated download implemented. You should only register to our database [here](https://www.arc-cogitate.com/data-release) to get your credentials. You will simply need to specify the name of the subject you would like to download, input your credentials and the data will get downloaded on your machine. 
+This step is **optional**, everything else is ready to go. You also don't need to download any data manually, has we have automated download implemented. You should only register to our database [here](https://www.arc-cogitate.com/data-release) to get your credentials. You will simply need to specify the name of the subject you would like to download, input your credentials and the data will get downloaded on your machine. 
 
-## How to use this repository:
-This repository contains jupyter notebooks, analysis pipelines and many different functions. Depending on your interest, here are the different places to go to first:
+# 3. How to use this repository:
+This repository contains Jupyter notebooks, analysis pipelines, and various utility functions. Depending on your goals, here are the key entry points:
 
-- If you are interested in iEEG data analysis and you would like to see what are the different steps involved OR if you are interested in the COGITATE data and would like to get a sense of how to work with them, go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-data-release.ipynb)
-- If you have decided you would like to do something with the cogitate data, you should go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-single-subject-report.ipynb). It can be run on each subject to get an idea of channels localization, responses observed... You can also used this [script](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/batch_subjects_reports.py) to specify a set of subjects to generate reports for each of them as HTML
-- If you are a curious about the implementation of different functions we are using, you can go have a look at this [file](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg). It contains the cog_ieeg python package, in which the various custom functions we have created are organized.
-- If you have your own data and would like to use pipelines that are similar to ours, go check the various scripts [here](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg/pipelines). The preprocessing pipelines relies heavily on the bids format, which means if your data also are in bids, you should be able to use our pipelines without much tweaking. 
+### Understanding iEEG data and the cogitate data set
+- Check out the [ieeg-data-release.ipynb notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-data-release.ipynb) to see the steps involved in iEEG data analysis, including how to work with the COGITATE data format.
 
-My personal recommendation is to always start with this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/ieeg-single-subject-report.ipynb) as it gives a really good overview of how things work in general. 
+### Generate Single-Subject Reports
+- If you have decided you would like to do something with the cogitate data, you should go check this [notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-single-subject-report.ipynb). It can be run on each subject to get an idea of channels localization, responses observed
+- You can also run the [batch_subjects_reports.py](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/batch_subjects_reports.py) to generate HTML reports for multiple subjects at once.
+
+### Explore or Modify the cog_ieeg Package
+- Visit [cog_ieeg](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg) to see the source code for the Python package. This is where various custom functions are implemented and organized.
+
+### Adopt Our Pipelines for Your Own Data
+- If you have your own data and would like to use pipelines that are similar to ours, go check the various scripts [here](https://github.com/Cogitate-consortium/iEEG-data-release/tree/main/cog_ieeg/pipelines). If your data follows the BIDS format, you should be able to adapt these pipelines with minimal effort
+
+My personal recommendation is to always start with [ieeg-data-release.ipynb notebook](https://github.com/Cogitate-consortium/iEEG-data-release/blob/main/notebooks/ieeg-data-release.ipynb) as it gives a really good overview of how things work in general. 
 
 ## How to cite us:
 If you use the scripts found in this repository, you can use the DOI provided by Zenodo to cite us. And here is a bibtex:
@@ -42,7 +58,7 @@ If you use the scripts found in this repository, you can use the DOI provided by
   title = {COGITATE-iEEG-DATA-RELEASE},
   author = {Lepauvre, Alex and Henin, Simon and Bendtz, Katarina and Sripad, Praveen and Bonacchi, Niccolò and Kreiman, Gabriel and Melloni, Lucia},
   year = {2024},
-  doi = {TO_BE_UPDATED},
+  doi = {10.5281/zenodo.13832169},
 }
 ```
 

@@ -13,8 +13,11 @@ import mne
 from mne_bids import BIDSPath, read_raw_bids
 
 from cog_ieeg.vizualization import count_colors
-from cog_ieeg.localization import project_montage_to_surf, exclude_distant_channels
-import environment_variables as ev
+from cog_ieeg.utils import (get_bids_root, get_fs_directory, set_bids_root, get_pipeline_config, 
+                            create_default_config, set_xnat_host, set_xnat_project, print_config)
+
+def inch2cm(cm):
+    return cm * 2.54
 
 SMALL_SIZE = 14
 MEDIUM_SIZE = 16
@@ -30,19 +33,66 @@ plt.rc('legend', fontsize=SMALL_SIZE)  # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 
 # Fetch fsaverage:
-mne.datasets.fetch_fsaverage(subjects_dir=ev.fs_directory, verbose=None)
+mne.datasets.fetch_fsaverage(subjects_dir=get_fs_directory(), verbose=None)
 
 # Specify the subjects to work with:
-subjects_df = pd.read_csv(Path(ev.bids_root, "participants.tsv"), sep='\t')
+subjects_df = pd.read_csv(Path(get_bids_root(), "participants.tsv"), sep='\t')
 subjects = subjects_df["participant_id"].to_list()
+
+# Create a histogram of age distribution:
+import pylustrator
+pylustrator.start()
+fig, ax = plt.subplots(4, 1, figsize=(4, 16))
+ax[0].pie(subjects_df['sex'].value_counts(), labels=subjects_df['sex'].value_counts().index,
+          colors=[[246 / 255, 216 / 255, 174 / 255], [34 / 255, 124 / 255, 157 / 255]])
+ax[0].set_title("Sex")
+ax[1].pie(subjects_df['handedness'].value_counts(), labels=subjects_df['handedness'].value_counts().index,
+          colors=[[246 / 255, 216 / 255, 174 / 255], [34 / 255, 124 / 255, 157 / 255], [85 / 255, 0 / 255, 0 / 255]])
+ax[1].set_title("handedness")
+ax[2].pie(subjects_df['primary_language'].value_counts(), labels=subjects_df['primary_language'].value_counts().index,
+          colors=[[246 / 255, 216 / 255, 174 / 255], [34 / 255, 124 / 255, 157 / 255], [85 / 255, 0 / 255, 0 / 255]])
+ax[2].set_title("Primary Language")
+ax[3].hist(subjects_df['age'])
+ax[3].set_title("Age")
+ax[3].set_ylabel('# subjects')
+ax[3].set_xlabel('Age (yrs.)')
+#% start: automatic generated code from pylustrator
+plt.figure(1).ax_dict = {ax.get_label(): ax for ax in plt.figure(1).axes}
+import matplotlib as mpl
+getattr(plt.figure(1), '_pylustrator_init', lambda: ...)()
+plt.figure(1).set_size_inches(10.090000/2.54, 27.740000/2.54, forward=True)
+plt.figure(1).axes[0].set(position=[0.1566, 0.812, 0.6743, 0.1674])
+plt.figure(1).axes[0].set_position([0.182178, 0.750627, 0.609931, 0.222078])
+plt.figure(1).axes[0].texts[0].set(position=(-0.1309, 0.4486), weight='bold')
+plt.figure(1).axes[0].texts[1].set(position=(0.0961, -0.4486), color='#ffffffff', weight='bold')
+plt.figure(1).axes[1].set(position=[0.1566, 0.6384, 0.6743, 0.1674])
+plt.figure(1).axes[1].set_position([0.182178, 0.520234, 0.609931, 0.222078])
+plt.figure(1).axes[1].texts[0].set(position=(-0.1309, 0.4887), weight='bold')
+plt.figure(1).axes[1].texts[1].set(position=(0.4677, -0.4319), color='#ffffffff', weight='bold')
+plt.figure(1).axes[1].texts[2].set(position=(0.2762, 0.1149), weight='bold')
+plt.figure(1).axes[2].set(position=[0.1566, 0.4414, 0.6743, 0.1674])
+plt.figure(1).axes[2].set_position([0.182178, 0.258914, 0.609931, 0.222078])
+plt.figure(1).axes[2].texts[0].set(position=(0.0961, 0.5329), weight='bold')
+plt.figure(1).axes[2].texts[1].set(position=(0.6498, -0.4925), weight='bold')
+plt.figure(1).axes[2].texts[2].set(position=(0.2762, 0.1074), text='Spanish/English', weight='bold')
+plt.figure(1).axes[3].set(position=[0.227, 0.3105, 0.5262, 0.1161])
+plt.figure(1).axes[3].set_position([0.223979, 0.085197, 0.519164, 0.154042])
+plt.show()
+#% end: automatic generated code from pylustrator
+save_path = Path("misc", "coverage_plots")
+if not os.path.isdir(save_path):
+    os.makedirs(save_path)
+plt.savefig(Path(save_path, "demographics.svg"))
+plt.close()
+
+
+
 # Further specify the data to use from the subjects:
 session = "1"
 datatype = "ieeg"
 task = "Dur"
 atlas = "destrieux"
-save_path = Path("coverage_plots")
-if not os.path.isdir(save_path):
-    os.makedirs(save_path)
+
 
 # Pre allocate
 montages = []
@@ -58,7 +108,7 @@ for i, subject in enumerate(subjects):
     # ===================================================================
     # Load the data:
     # Set the bids path:
-    bids_path = BIDSPath(root=ev.bids_root, subject=subject.split("-")[1],
+    bids_path = BIDSPath(root=get_bids_root(), subject=subject.split("-")[1],
                          session=session,
                          datatype=datatype,
                          task=task)
@@ -149,11 +199,11 @@ plt.close()
 mni_montage = mne.channels.make_dig_montage(ch_pos=mni_coords,
                                             coord_frame='mni_tal')
 # Project the montage to the surface:
-mni_montage = project_montage_to_surf(mni_montage, channels_types_mapping, "fsaverage", ev.fs_directory)
+mni_montage = project_montage_to_surf(mni_montage, channels_types_mapping, "fsaverage", get_fs_directory())
 # Remove electrodes that are too far away:
-mni_montage = exclude_distant_channels(mni_montage, "fsaverage", ev.fs_directory, max_dist=3)
+mni_montage = exclude_distant_channels(mni_montage, "fsaverage", get_fs_directory(), max_dist=3)
 # Add the MNI fiducials
-mni_montage.add_mni_fiducials(ev.fs_directory)
+mni_montage.add_mni_fiducials(get_fs_directory())
 # In mne-python, plotting electrodes on the brain requires some additional info about the channels:
 mni_info = mne.create_info(ch_names=list(mni_montage.ch_names),
                            ch_types=[channels_types_mapping[ch] for ch in list(mni_montage.ch_names)],
@@ -175,7 +225,7 @@ for typ in ["ecog", "seeg"]:
         # Render brain:
         brain = mne.viz.Brain(
             "fsaverage",
-            subjects_dir=ev.fs_directory,
+            subjects_dir=get_fs_directory(),
             surf="pial",
             cortex="low_contrast",
             alpha=1,
@@ -185,7 +235,7 @@ for typ in ["ecog", "seeg"]:
     else:
         brain = mne.viz.Brain(
             "fsaverage",
-            subjects_dir=ev.fs_directory,
+            subjects_dir=get_fs_directory(),
             surf="pial",
             cortex="low_contrast",
             alpha=0.4,
@@ -224,7 +274,7 @@ brain = mne.viz.Brain(
     "fsaverage",
     "both",
     "inflated",
-    subjects_dir=ev.fs_directory,
+    subjects_dir=get_fs_directory(),
     cortex="low_contrast",
     background="white",
     size=(800, 600),
