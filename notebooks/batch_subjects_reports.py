@@ -39,7 +39,7 @@ def subject_report_html(subject_id):
     pm.execute_notebook(
         input_nb,
         output_nb,
-        parameters=dict(subject=subject_id)
+        parameters=dict(subject=subject_id.split('-')[1])
     )
 
     # Convert the output notebook to HTML
@@ -57,9 +57,13 @@ def subject_report_html(subject_id):
 
 
 if __name__ == "__main__":
-    subjects = pd.read_csv(Path(get_bids_root(), "participants.tsv"), sep='\t')["participant_id"].to_list()
+    # subjects = pd.read_csv(Path(get_bids_root(), "participants.tsv"), sep='\t')["participant_id"].to_list()
+    subjects = ["sub-CF102", "sub-CF103"]
     # Download the data if necessary:
-    xnat_download(['sub-' + sub for sub in subjects], overwrite=False)
+    xnat_download([sub for sub in subjects], overwrite=False)
     for subject in subjects:
         print(subject)
-        subject_report_html(subject)
+        try:
+            subject_report_html(subject)
+        except:
+            print(f"Failed for {subject}")

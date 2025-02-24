@@ -74,7 +74,7 @@ def xnat_download(subjects_to_download, to=None, overwrite=False):
     if not op.isdir(to):
         os.makedirs(to)
 
-    if _has_local_subjects(to, subject) and not overwrite:
+    if _has_local_subjects(to, subjects_to_download) and not overwrite:
         print(f'The subjects are already present on your computer.')
         print(f'Set overwrite to true if you wish to overwrite them.')
         return
