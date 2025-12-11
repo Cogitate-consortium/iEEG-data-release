@@ -183,7 +183,8 @@ def epoching(raw, events, events_dict, picks="all", tmin=-0.5, tmax=2.0, events_
     # Epoching the data:
     epochs = mne.Epochs(raw, events=events, event_id=events_of_interest, tmin=tmin,
                         tmax=tmax, baseline=baseline, picks=picks,
-                        reject_by_annotation=reject_by_annotation)
+                        reject_by_annotation=reject_by_annotation, 
+                        event_repeated='drop')
     # Dropping the bad epochs if there were any:
     epochs.drop_bad()
     # Adding the meta data to the table. The meta data are created by parsing the events strings, as each substring

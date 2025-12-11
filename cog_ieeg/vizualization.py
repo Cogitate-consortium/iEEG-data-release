@@ -27,6 +27,7 @@ from mne.viz import plot_alignment, snapshot_brain_montage
 
 from cog_ieeg.localization import add_fiducials
 from cog_ieeg.utils import path_generator, save_param
+from cog_ieeg.processing import baseline_scaling
 
 
 def plot_channels_psd(raw, save_root, step, signal, file_prefix,
